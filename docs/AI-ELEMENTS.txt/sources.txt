@@ -1,0 +1,285 @@
+AI SDK 5 is available now.
+View Announcement
+Introduction
+
+Setup
+Usage
+Troubleshooting
+Examples
+
+Chatbot
+v0 clone
+Components
+
+Actions
+Branch
+Code Block
+Conversation
+Image
+Inline Citation
+Loader
+Message
+Prompt Input
+Reasoning
+Response
+Sources
+Suggestion
+Task
+Tool
+Web Preview
+Components
+Sources
+Sources
+
+The Sources component allows a user to view the sources or citations used to generate a response.
+
+
+Used 3 sources
+Installation
+
+ai-elements
+shadcn
+Manual
+npx ai-elements@latest add sources
+Usage
+
+
+import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+} from '@/components/ai-elements/sources';
+
+<Sources>
+  <SourcesTrigger count={1} />
+  <SourcesContent>
+    <Source href="https://ai-sdk.dev" title="AI SDK" />
+  </SourcesContent>
+</Sources>
+Usage with AI SDK
+
+Build a simple web search agent with Perplexity Sonar.
+
+Add the following component to your frontend:
+
+app/page.tsx
+
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+} from '@/components/ai-elements/sources';
+import {
+  Input,
+  PromptInputTextarea,
+  PromptInputSubmit,
+} from '@/components/ai-elements/prompt-input';
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import { Response } from '@/components/ai-elements/response';
+import { useState } from 'react';
+import { DefaultChatTransport } from 'ai';
+
+const SourceDemo = () => {
+  const [input, setInput] = useState('');
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/sources',
+    }),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      sendMessage({ text: input });
+      setInput('');
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 relative size-full rounded-lg border h-[600px]">
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-auto mb-4">
+          <Conversation>
+            <ConversationContent>
+              {messages.map((message) => (
+                <div key={message.id}>
+                  {message.role === 'assistant' && (
+                    <Sources>
+                      <SourcesTrigger
+                        count={
+                          message.parts.filter(
+                            (part) => part.type === 'source-url',
+                          ).length
+                        }
+                      />
+                      {message.parts.map((part, i) => {
+                        switch (part.type) {
+                          case 'source-url':
+                            return (
+                              <SourcesContent key={`${message.id}-${i}`}>
+                                <Source
+                                  key={`${message.id}-${i}`}
+                                  href={part.url}
+                                  title={part.url}
+                                />
+                              </SourcesContent>
+                            );
+                        }
+                      })}
+                    </Sources>
+                  )}
+                  <Message from={message.role} key={message.id}>
+                    <MessageContent>
+                      {message.parts.map((part, i) => {
+                        switch (part.type) {
+                          case 'text':
+                            return (
+                              <Response key={`${message.id}-${i}`}>
+                                {part.text}
+                              </Response>
+                            );
+                          default:
+                            return null;
+                        }
+                      })}
+                    </MessageContent>
+                  </Message>
+                </div>
+              ))}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
+        </div>
+
+        <Input
+          onSubmit={handleSubmit}
+          className="mt-4 w-full max-w-2xl mx-auto relative"
+        >
+          <PromptInputTextarea
+            value={input}
+            placeholder="Ask a question and search the..."
+            onChange={(e) => setInput(e.currentTarget.value)}
+            className="pr-12"
+          />
+          <PromptInputSubmit
+            status={status === 'streaming' ? 'streaming' : 'ready'}
+            disabled={!input.trim()}
+            className="absolute bottom-1 right-1"
+          />
+        </Input>
+      </div>
+    </div>
+  );
+};
+
+export default SourceDemo;
+Add the following route to your backend:
+
+api/chat/route.ts
+
+import { convertToModelMessages, streamText, UIMessage } from 'ai';
+import { perplexity } from '@ai-sdk/perplexity';
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json();
+
+  const result = streamText({
+    model: 'perplexity/sonar',
+    system:
+      'You are a helpful assistant. Keep your responses short (< 100 words) unless you are asked for more details. ALWAYS USE SEARCH.',
+    messages: convertToModelMessages(messages),
+  });
+
+  return result.toUIMessageStreamResponse({
+    sendSources: true,
+  });
+}
+Features
+
+Collapsible component that allows a user to view the sources or citations used to generate a response
+Customizable trigger and content components
+Support for custom sources or citations
+Responsive design with mobile-friendly controls
+Clean, modern styling with customizable themes
+Examples
+
+Custom rendering
+
+
+Using 3 citations
+Props
+
+<Sources />
+
+[...props]?:
+React.HTMLAttributes<HTMLDivElement>
+Any other props are spread to the root div.
+<SourcesTrigger />
+
+count?:
+number
+The number of sources to display in the trigger.
+[...props]?:
+React.ButtonHTMLAttributes<HTMLButtonElement>
+Any other props are spread to the trigger button.
+<SourcesContent />
+
+[...props]?:
+React.HTMLAttributes<HTMLDivElement>
+Any other props are spread to the content container.
+<Source />
+
+[...props]?:
+React.AnchorHTMLAttributes<HTMLAnchorElement>
+Any other props are spread to the anchor element.
+Previous
+Response
+Next
+Suggestion
+On this page
+Sources
+Installation
+Usage
+Usage with AI SDK
+Features
+Examples
+Custom rendering
+Props
+<Sources />
+<SourcesTrigger />
+<SourcesContent />
+<Source />
+Elevate your AI applications with Vercel.
+Trusted by OpenAI, Replicate, Suno, Pinecone, and more.
+Vercel provides tools and infrastructure to deploy AI apps and features at scale.
+Resources
+Docs
+Cookbook
+Providers
+Showcase
+GitHub
+Discussions
+More
+Playground
+Contact Sales
+About Vercel
+Next.js + Vercel
+Open Source Software
+GitHub
+X
+Legal
+Privacy Policy
+© 2025 Vercel, Inc.

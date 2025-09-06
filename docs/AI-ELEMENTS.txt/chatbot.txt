@@ -1,0 +1,427 @@
+AI SDK 5 is available now.
+View Announcement
+Introduction
+
+Setup
+Usage
+Troubleshooting
+Examples
+
+Chatbot
+v0 clone
+Components
+
+Actions
+Branch
+Code Block
+Conversation
+Image
+Inline Citation
+Loader
+Message
+Prompt Input
+Reasoning
+Response
+Sources
+Suggestion
+Task
+Tool
+Web Preview
+Examples
+Chatbot
+Chatbot
+
+An example of how to use the AI Elements to build a chatbot.
+
+Can you explain how to use React hooks effectively?
+
+
+Used 2 sources
+React Hooks Best Practices
+React hooks are a powerful feature that let you use state and other React features without writing classes. Here are some tips for using them effectively:
+Rules of Hooks
+Only call hooks at the top level of your component or custom hooks
+Don't call hooks inside loops, conditions, or nested functions
+Common Hooks
+useState: For local component state
+useEffect: For side effects like data fetching
+useContext: For consuming context
+useReducer: For complex state logic
+useCallback: For memoizing functions
+useMemo: For memoizing values
+Example of useState and useEffect
+jsx
+
+
+function ProfilePage({ userId }) {
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    // This runs after render and when userId changes
+    fetchUser(userId).then(userData => {
+      setUser(userData);
+    });
+  }, [userId]);
+  
+  return user ? <Profile user={user} /> : <Loading />;
+}
+Would you like me to explain any specific hook in more detail?
+
+Yes, could you explain useCallback and useMemo in more detail? When should I use one over the other?
+
+
+1 of 3
+
+
+Thought for 10 seconds
+useCallback vs useMemo
+Both hooks help with performance optimization, but they serve different purposes:
+useCallback
+useCallback memoizes functions to prevent unnecessary re-renders of child components that receive functions as props.
+jsx
+
+
+// Without useCallback - a new function is created on every render
+const handleClick = () => {
+  console.log(count);
+};
+
+// With useCallback - the function is only recreated when dependencies change
+const handleClick = useCallback(() => {
+  console.log(count);
+}, [count]);
+useMemo
+useMemo memoizes values to avoid expensive recalculations on every render.
+jsx
+
+
+// Without useMemo - expensive calculation runs on every render
+const sortedList = expensiveSort(items);
+
+// With useMemo - calculation only runs when items change
+const sortedList = useMemo(() => expensiveSort(items), [items]);
+When to use which?
+Use useCallback when:
+Passing callbacks to optimized child components that rely on reference equality
+Working with event handlers that you pass to child components
+Use useMemo when:
+You have computationally expensive calculations
+You want to avoid recreating objects that are used as dependencies for other hooks
+Performance Note
+Don't overuse these hooks! They come with their own overhead. Only use them when you have identified a genuine performance issue.
+
+What are the latest trends in AI?
+How does machine learning work?
+Explain quantum computing
+Best practices for React development
+Tell me about TypeScript benefits
+How to optimize database queries?
+What is the difference between SQL and NoSQL?
+Explain cloud computing basics
+
+Add attachment
+Microphone
+
+Search
+
+GPT-4
+
+
+Tutorial
+
+Let's walk through how to build a chatbot using AI Elements and AI SDK. Our example will include reasoning, web search with citations, and a model picker.
+
+Setup
+
+First, set up a new Next.js repo and cd into it by running the following command (make sure you choose to use Tailwind the project setup):
+
+Terminal
+
+npx create-next-app@latest ai-chatbot && cd ai-chatbot
+Run the following command to install AI Elements. This will also set up shadcn/ui if you haven't already configured it:
+
+Terminal
+
+npx ai-elements@latest
+Now, install the AI SDK dependencies:
+
+pnpm
+npm
+yarn
+pnpm add ai @ai-sdk/react zod
+In order to use the providers, let's configure an AI Gateway API key. Create a .env.local in your root directory and navigate here to create a token, then paste it in your .env.local.
+
+We're now ready to start building our app!
+
+Client
+
+In your app/page.tsx, replace the code with the file below.
+
+Here, we use the Input component in order to build an input component with a model picker, with a few models from the AI Gateway model list already configured.
+
+The whole chat lives in a Conversation. We switch on message.parts and render the respective part within Message, Reasoning, and Sources. We also use status from useChat to stream reasoning tokens, as well as render Loader.
+
+
+'use client';
+
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import {
+  PromptInput,
+  PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import {
+  Actions
+  ActionsTrigger,
+  ActionsContent,
+} from '@/components/ai-elements/actions';
+import { useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { Response } from '@/components/ai-elements/response';
+import { GlobeIcon } from 'lucide-react';
+import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+} from '@/components/ai-elements/sources';
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from '@/components/ai-elements/reasoning';
+import { Loader } from '@/components/ai-elements/loader';
+
+const models = [
+  {
+    name: 'GPT 4o',
+    value: 'openai/gpt-4o',
+  },
+  {
+    name: 'Deepseek R1',
+    value: 'deepseek/deepseek-r1',
+  },
+];
+
+const ChatBotDemo = () => {
+  const [input, setInput] = useState('');
+  const [model, setModel] = useState<string>(models[0].value);
+  const [webSearch, setWebSearch] = useState(false);
+  const { messages, sendMessage, status } = useChat();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      sendMessage(
+        { text: input },
+        {
+          body: {
+            model: model,
+            webSearch: webSearch,
+          },
+        },
+      );
+      setInput('');
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
+      <div className="flex flex-col h-full">
+        <Conversation className="h-full">
+          <ConversationContent>
+            {messages.map((message) => (
+              <div key={message.id}>
+                {message.role === 'assistant' && message.parts.filter((part) => part.type === 'source-url').length > 0 && (
+                  <Sources>
+                    <SourcesTrigger
+                      count={
+                        message.parts.filter(
+                          (part) => part.type === 'source-url',
+                        ).length
+                      }
+                    />
+                    {message.parts.filter((part) => part.type === 'source-url').map((part, i) => (
+                      <SourcesContent key={`${message.id}-${i}`}>
+                        <Source
+                          key={`${message.id}-${i}`}
+                          href={part.url}
+                          title={part.url}
+                        />
+                      </SourcesContent>
+                    ))}
+                  </Sources>
+                )}
+                {message.parts.map((part, i) => {
+                  switch (part.type) {
+                    case 'text':
+                      return (
+                        <Fragment key={`${message.id}-${i}`}>
+                          <Message from={message.role}>
+                            <MessageContent>
+                              <Response>
+                                {part.text}
+                              </Response>
+                            </MessageContent>
+                          </Message>
+                          {message.role === 'assistant' && i === messages.length - 1 && (
+                            <Actions className="mt-2">
+                              <Action
+                                onClick={() => regenerate()}
+                                label="Retry"
+                              >
+                                <RefreshCcwIcon className="size-3" />
+                              </Action>
+                              <Action
+                                onClick={() =>
+                                  navigator.clipboard.writeText(part.text)
+                                }
+                                label="Copy"
+                              >
+                                <CopyIcon className="size-3" />
+                              </Action>
+                            </Actions>
+                          )}
+                        </Fragment>
+                      );
+                    case 'reasoning':
+                      return (
+                        <Reasoning
+                          key={`${message.id}-${i}`}
+                          className="w-full"
+                          isStreaming={status === 'streaming' && i === message.parts.length - 1 && message.id === messages.at(-1)?.id}
+                        >
+                          <ReasoningTrigger />
+                          <ReasoningContent>{part.text}</ReasoningContent>
+                        </Reasoning>
+                      );
+                    default:
+                      return null;
+                  }
+                })}
+              </div>
+            ))}
+            {status === 'submitted' && <Loader />}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+
+        <PromptInput onSubmit={handleSubmit} className="mt-4">
+          <PromptInputTextarea
+            onChange={(e) => setInput(e.target.value)}
+            value={input}
+          />
+          <PromptInputToolbar>
+            <PromptInputTools>
+              <PromptInputButton
+                variant={webSearch ? 'default' : 'ghost'}
+                onClick={() => setWebSearch(!webSearch)}
+              >
+                <GlobeIcon size={16} />
+                <span>Search</span>
+              </PromptInputButton>
+              <PromptInputModelSelect
+                onValueChange={(value) => {
+                  setModel(value);
+                }}
+                value={model}
+              >
+                <PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectValue />
+                </PromptInputModelSelectTrigger>
+                <PromptInputModelSelectContent>
+                  {models.map((model) => (
+                    <PromptInputModelSelectItem key={model.value} value={model.value}>
+                      {model.name}
+                    </PromptInputModelSelectItem>
+                  ))}
+                </PromptInputModelSelectContent>
+              </PromptInputModelSelect>
+            </PromptInputTools>
+            <PromptInputSubmit disabled={!input} status={status} />
+          </PromptInputToolbar>
+        </PromptInput>
+      </div>
+    </div>
+  );
+};
+
+export default ChatBotDemo;
+Server
+
+Create a new route handler app/api/chat/route.ts and paste in the following code. We're using perplexity/sonar for web search because by default the model returns search results. We also pass sendSources and sendReasoning to toUIMessageStreamResponse in order to receive as parts on the frontend.
+
+app/api/chat/route.ts
+
+import { streamText, UIMessage, convertToModelMessages } from 'ai';
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const {
+    messages,
+    model,
+    webSearch,
+  }: { messages: UIMessage[]; model: string; webSearch: boolean } =
+    await req.json();
+
+  const result = streamText({
+    model: webSearch ? 'perplexity/sonar' : model,
+    messages: convertToModelMessages(messages),
+    system:
+      'You are a helpful assistant that can answer questions and help with tasks',
+  });
+
+  // send sources and reasoning back to the client
+  return result.toUIMessageStreamResponse({
+    sendSources: true,
+    sendReasoning: true,
+  });
+}
+You now have a working chatbot app you can build off of! Feel free to explore other components like Tool or Task to extend your app, or view the other examples.
+
+Previous
+Examples
+Next
+v0 clone
+On this page
+Chatbot
+Tutorial
+Setup
+Client
+Server
+Elevate your AI applications with Vercel.
+Trusted by OpenAI, Replicate, Suno, Pinecone, and more.
+Vercel provides tools and infrastructure to deploy AI apps and features at scale.
+Resources
+Docs
+Cookbook
+Providers
+Showcase
+GitHub
+Discussions
+More
+Playground
+Contact Sales
+About Vercel
+Next.js + Vercel
+Open Source Software
+GitHub
+X
+Legal
+Privacy Policy
+© 2025 Vercel, Inc.

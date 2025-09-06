@@ -1,0 +1,327 @@
+AI SDK 5 is available now.
+View Announcement
+Introduction
+
+Setup
+Usage
+Troubleshooting
+Examples
+
+Chatbot
+v0 clone
+Components
+
+Actions
+Branch
+Code Block
+Conversation
+Image
+Inline Citation
+Loader
+Message
+Prompt Input
+Reasoning
+Response
+Sources
+Suggestion
+Task
+Tool
+Web Preview
+Components
+Prompt Input
+Prompt Input
+
+The PromptInput component allows a user to send a message to a large language model. It includes a textarea, a submit button, and a dropdown for selecting the model.
+
+
+
+
+
+Search
+
+GPT-4
+
+
+Installation
+
+ai-elements
+shadcn
+Manual
+npx ai-elements@latest add prompt-input
+Usage
+
+
+import {
+  PromptInput,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+} from '@/components/ai-elements/prompt-input';
+
+<PromptInput onSubmit={() => {}} className="mt-4 relative">
+  <PromptInputTextarea onChange={(e) => {}} value={''} />
+  <PromptInputToolbar>
+    <PromptInputSubmit
+      className="absolute right-1 bottom-1"
+      disabled={false}
+      status={'ready'}
+    />
+  </PromptInputToolbar>
+</PromptInput>
+Usage with AI SDK
+
+Built a fully functional chat app using PromptInput, Conversation with a model picker:
+
+Add the following component to your frontend:
+
+app/page.tsx
+
+'use client';
+
+import {
+  PromptInput,
+  PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import { GlobeIcon, MicIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import { Response } from '@/components/ai-elements/response';
+
+const models = [
+  { id: 'gpt-4o', name: 'GPT-4o' },
+  { id: 'claude-opus-4-20250514', name: 'Claude 4 Opus' },
+];
+
+const InputDemo = () => {
+  const [text, setText] = useState<string>('');
+  const [model, setModel] = useState<string>(models[0].id);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    sendMessage(
+      { text: text },
+      {
+        body: {
+          model: model,
+        },
+      },
+    );
+    setText('');
+  };
+
+  const { messages, status, sendMessage } = useChat();
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 relative size-full rounded-lg border h-[600px]">
+      <div className="flex flex-col h-full">
+        <Conversation>
+          <ConversationContent>
+            {messages.map((message) => (
+              <Message from={message.role} key={message.id}>
+                <MessageContent>
+                  {message.parts.map((part, i) => {
+                    switch (part.type) {
+                      case 'text':
+                        return (
+                          <Response key={`${message.id}-${i}`}>
+                            {part.text}
+                          </Response>
+                        );
+                      default:
+                        return null;
+                    }
+                  })}
+                </MessageContent>
+              </Message>
+            ))}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+
+        <PromptInput onSubmit={handleSubmit} className="mt-4">
+          <PromptInputTextarea
+            onChange={(e) => setText(e.target.value)}
+            value={text}
+          />
+          <PromptInputToolbar>
+            <PromptInputTools>
+              <PromptInputButton>
+                <MicIcon size={16} />
+              </PromptInputButton>
+              <PromptInputButton>
+                <GlobeIcon size={16} />
+                <span>Search</span>
+              </PromptInputButton>
+              <PromptInputModelSelect
+                onValueChange={(value) => {
+                  setModel(value);
+                }}
+                value={model}
+              >
+                <PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectValue />
+                </PromptInputModelSelectTrigger>
+                <PromptInputModelSelectContent>
+                  {models.map((model) => (
+                    <PromptInputModelSelectItem key={model.id} value={model.id}>
+                      {model.name}
+                    </PromptInputModelSelectItem>
+                  ))}
+                </PromptInputModelSelectContent>
+              </PromptInputModelSelect>
+            </PromptInputTools>
+            <PromptInputSubmit disabled={!text} status={status} />
+          </PromptInputToolbar>
+        </PromptInput>
+      </div>
+    </div>
+  );
+};
+
+export default InputDemo;
+Add the following route to your backend:
+
+app/api/chat/route.ts
+
+import { streamText, UIMessage, convertToModelMessages } from 'ai';
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { model, messages }: { messages: UIMessage[]; model: string } =
+    await req.json();
+
+  const result = streamText({
+    model: model,
+    messages: convertToModelMessages(messages),
+  });
+
+  return result.toUIMessageStreamResponse();
+}
+Features
+
+Auto-resizing textarea that adjusts height based on content
+Automatic submit button icons based on status
+Support for keyboard shortcuts (Cmd/Ctrl + Enter to submit)
+Customizable min/max height for the textarea
+Flexible toolbar with support for custom actions and tools
+Built-in model selection dropdown
+Responsive design with mobile-friendly controls
+Clean, modern styling with customizable themes
+Form-based submission handling
+Props
+
+<PromptInput />
+
+[...props]?:
+React.HTMLAttributes<HTMLFormElement>
+Any other props are spread to the root form element.
+<PromptInputTextarea />
+
+[...props]?:
+React.ComponentProps<typeof Textarea>
+Any other props are spread to the underlying Textarea component.
+<PromptInputToolbar />
+
+[...props]?:
+React.HTMLAttributes<HTMLDivElement>
+Any other props are spread to the toolbar div.
+<PromptInputTools />
+
+[...props]?:
+React.HTMLAttributes<HTMLDivElement>
+Any other props are spread to the tools div.
+<PromptInputButton />
+
+[...props]?:
+React.ComponentProps<typeof Button>
+Any other props are spread to the underlying shadcn/ui Button component.
+<PromptInputSubmit />
+
+[...props]?:
+React.ComponentProps<typeof Button>
+Any other props are spread to the underlying shadcn/ui Button component.
+<PromptInputModelSelect />
+
+[...props]?:
+React.ComponentProps<typeof Select>
+Any other props are spread to the underlying Select component.
+<PromptInputModelSelectTrigger />
+
+[...props]?:
+React.ComponentProps<typeof SelectTrigger>
+Any other props are spread to the underlying SelectTrigger component.
+<PromptInputModelSelectContent />
+
+[...props]?:
+React.ComponentProps<typeof SelectContent>
+Any other props are spread to the underlying SelectContent component.
+<PromptInputModelSelectItem />
+
+[...props]?:
+React.ComponentProps<typeof SelectItem>
+Any other props are spread to the underlying SelectItem component.
+<PromptInputModelSelectValue />
+
+[...props]?:
+React.ComponentProps<typeof SelectValue>
+Any other props are spread to the underlying SelectValue component.
+Previous
+Message
+Next
+Reasoning
+On this page
+Prompt Input
+Installation
+Usage
+Usage with AI SDK
+Features
+Props
+<PromptInput />
+<PromptInputTextarea />
+<PromptInputToolbar />
+<PromptInputTools />
+<PromptInputButton />
+<PromptInputSubmit />
+<PromptInputModelSelect />
+<PromptInputModelSelectTrigger />
+<PromptInputModelSelectContent />
+<PromptInputModelSelectItem />
+<PromptInputModelSelectValue />
+Elevate your AI applications with Vercel.
+Trusted by OpenAI, Replicate, Suno, Pinecone, and more.
+Vercel provides tools and infrastructure to deploy AI apps and features at scale.
+Resources
+Docs
+Cookbook
+Providers
+Showcase
+GitHub
+Discussions
+More
+Playground
+Contact Sales
+About Vercel
+Next.js + Vercel
+Open Source Software
+GitHub
+X
+Legal
+Privacy Policy
+© 2025 Vercel, Inc.

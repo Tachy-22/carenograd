@@ -1,0 +1,200 @@
+AI SDK 5 is available now.
+View Announcement
+Introduction
+
+Setup
+Usage
+Troubleshooting
+Examples
+
+Chatbot
+v0 clone
+Components
+
+Actions
+Branch
+Code Block
+Conversation
+Image
+Inline Citation
+Loader
+Message
+Prompt Input
+Reasoning
+Response
+Sources
+Suggestion
+Task
+Tool
+Web Preview
+Components
+Response
+Response
+
+The Response component renders a Markdown response from a large language model. It uses Streamdown under the hood to render the markdown.
+
+Hello World
+This is a markdown response from an AI model.
+Tables
+
+
+Column 1	Column 2	Column 3
+Row 1, Col 1	Row 1, Col 2	Row 1, Col 3
+Row 2, Col 1	Row 2, Col 2	Row 2, Col 3
+Row 3, Col 1	Row 3, Col 2	Row 3, Col 3
+Blockquotes
+This is a blockquote. It can contain multiple lines and formatted text.
+It can even have multiple paragraphs.
+Inline Code
+Here is some text with inline code in the
+Installation
+
+ai-elements
+shadcn
+Manual
+npx ai-elements@latest add response
+After adding the component, you'll need to add the following to your globals.css file:
+
+
+@source "../node_modules/streamdown/dist/index.js";
+This will ensure that the Streamdown styles are applied to your project. See Streamdown's documentation for more details.
+
+Usage
+
+
+import { Response } from '@/components/ai-elements/response';
+
+<Response>**Hi there.** I am an AI model designed to help you.</Response>
+Usage with AI SDK
+
+Populate a markdown response with messages from useChat.
+
+Add the following component to your frontend:
+
+app/page.tsx
+
+'use client';
+
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import { useChat } from '@ai-sdk/react';
+import { Response } from '@/components/ai-elements/response';
+
+const ResponseDemo = () => {
+  const { messages } = useChat();
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 relative size-full rounded-lg border h-[600px]">
+      <div className="flex flex-col h-full">
+        <Conversation>
+          <ConversationContent>
+            {messages.map((message) => (
+              <Message from={message.role} key={message.id}>
+                <MessageContent>
+                  {message.parts.map((part, i) => {
+                    switch (part.type) {
+                      case 'text': // we don't use any reasoning or tool calls in this example
+                        return (
+                          <Response key={`${message.id}-${i}`}>
+                            {part.text}
+                          </Response>
+                        );
+                      default:
+                        return null;
+                    }
+                  })}
+                </MessageContent>
+              </Message>
+            ))}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
+      </div>
+    </div>
+  );
+};
+
+export default ResponseDemo;
+Features
+
+Renders markdown content with support for paragraphs, links, and code blocks
+Supports GFM features like tables, task lists, and strikethrough text via remark-gfm
+Supports rendering Math Equations via rehype-katex
+Smart streaming support - automatically completes incomplete formatting during real-time text streaming
+Code blocks are rendered with syntax highlighting for various programming languages
+Code blocks include a button to easily copy code to clipboard
+Adapts to different screen sizes while maintaining readability
+Seamlessly integrates with both light and dark themes
+Customizable appearance through className props and Tailwind CSS utilities
+Built with accessibility in mind for all users
+Props
+
+<Response />
+
+children:
+string
+The markdown content to render.
+parseIncompleteMarkdown?:
+boolean
+Whether to parse and fix incomplete markdown syntax (e.g., unclosed code blocks or lists).
+className?:
+string
+CSS class names to apply to the wrapper div element.
+components?:
+object
+Custom React components to use for rendering markdown elements (e.g., custom heading, paragraph, code block components).
+allowedImagePrefixes?:
+string[]
+Array of allowed URL prefixes for images. Use ["*"] to allow all images.
+allowedLinkPrefixes?:
+string[]
+Array of allowed URL prefixes for links. Use ["*"] to allow all links.
+defaultOrigin?:
+string
+Default origin to use for relative URLs in links and images.
+rehypePlugins?:
+array
+Array of rehype plugins to use for processing HTML. Includes KaTeX for math rendering by default.
+remarkPlugins?:
+array
+Array of remark plugins to use for processing markdown. Includes GitHub Flavored Markdown and math support by default.
+[...props]?:
+React.HTMLAttributes<HTMLDivElement>
+Any other props are spread to the root div.
+Previous
+Reasoning
+Next
+Sources
+On this page
+Response
+Installation
+Usage
+Usage with AI SDK
+Features
+Props
+<Response />
+Elevate your AI applications with Vercel.
+Trusted by OpenAI, Replicate, Suno, Pinecone, and more.
+Vercel provides tools and infrastructure to deploy AI apps and features at scale.
+Resources
+Docs
+Cookbook
+Providers
+Showcase
+GitHub
+Discussions
+More
+Playground
+Contact Sales
+About Vercel
+Next.js + Vercel
+Open Source Software
+GitHub
+X
+Legal
+Privacy Policy
+© 2025 Vercel, Inc.
