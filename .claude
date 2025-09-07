@@ -29,6 +29,7 @@
    - Never assume library availability - always check existing dependencies
    - No comments in code unless explicitly requested
    - **NEVER use "any" type in TypeScript - always use proper, specific types**
+   - **NEVER use "use client" directive in page.tsx and layout.tsx files - these must remain server-side components**
 
 7. **Security:**
    - Only assist with defensive security tasks

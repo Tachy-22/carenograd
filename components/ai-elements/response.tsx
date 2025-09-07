@@ -2,19 +2,24 @@
 
 import { cn } from '@/lib/utils';
 import { type ComponentProps, memo } from 'react';
-import { Streamdown } from 'streamdown';
+import MarkdownContent from '@/components/MarkdownContent';
 
-type ResponseProps = ComponentProps<typeof Streamdown>;
+type ResponseProps = {
+  children: string;
+  className?: string;
+};
 
 export const Response = memo(
-  ({ className, ...props }: ResponseProps) => (
-    <Streamdown
+  ({ className, children, ...props }: ResponseProps) => (
+    <MarkdownContent
       className={cn(
         'size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </MarkdownContent>
   ),
   (prevProps, nextProps) => prevProps.children === nextProps.children
 );
