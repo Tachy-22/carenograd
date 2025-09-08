@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Remograd - AI Graduate School Assistant",
+  title: "Remotegrad - AI Graduate School Assistant",
   description: "Your AI Assistant for Graduate School Success",
 };
 

@@ -70,47 +70,47 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <Image 
-                src="/logo.png" 
-                alt="Remograd Logo" 
-                width={32} 
+              {/* <Image
+                src="/logo.png"
+                alt="Remotegrad Logo"
+                width={32}
                 height={32}
                 className="rounded-md"
-              />
-              <h1 className="text-xl font-bold text-foreground">Remograd</h1>
+              /> */}
+              <h1 className="text-xl font-bold text-foreground">Remotegrad</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost">Login</Button>
-              <Button>Sign Up</Button>
+              <Button variant="ghost" onClick={() => setShowAuthModal(true)}>Login</Button>
+              <Button onClick={() => setShowAuthModal(true)}>Sign Up</Button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl h-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
+      <main className="max-w-4xl min-h-[calc(100vh-4rem)] flex flex-col  justify-center mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-6">
           <div className="flex justify-center mb-6">
-            <Image 
-              src="/logo.png" 
-              alt="Remograd Logo" 
-              width={80} 
+            <Image
+              src="/logo.png"
+              alt="Remotegrad Logo"
+              width={80}
               height={80}
-              className="rounded-lg shadow-lg"
+              className="rounded-lg "
             />
           </div>
           <h2 className="text-4xl font-bold text-foreground mb-4">
             Your AI Assistant for Graduate School Success
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-xl text-muted-foreground mb-2">
             Get personalized guidance, research assistance, and application management
           </p>
         </div>
 
         {/* AI Elements Input */}
-        <div className="max-w-2xl mx-auto mb-12">
+        <div className="max-w-2xl w-full mx-auto mb-12">
           <PromptInput onSubmit={handleSubmit} className="relative">
-            <PromptInputTextarea 
+            <PromptInputTextarea
               placeholder="Ask me about graduate programs..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -127,25 +127,25 @@ export default function LandingPage() {
         </div>
 
         {/* Suggestions */}
-        <div className="max-w-4xl mx-auto mb-12">
+        {/* <div className="max-w-4xl mx-auto mb-12">
           <Suggestions>
             {gradSchoolSuggestions.map((suggestion, index) => (
-              <Suggestion 
+              <Suggestion
                 key={index}
                 suggestion={suggestion}
                 onClick={() => handleSuggestionClick(suggestion)}
               />
             ))}
           </Suggestions>
-        </div>
+        </div> */}
 
-     
+
       </main>
 
       {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
     </div>
   )

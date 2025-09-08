@@ -11,13 +11,13 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { ChatStatus } from 'ai';
-import { Loader2Icon, SendIcon, SquareIcon, XIcon } from 'lucide-react';
+import { ArrowUp, Loader2Icon, SendIcon, SquareIcon, XIcon } from 'lucide-react';
 import type {
   ComponentProps,
   HTMLAttributes,
   KeyboardEventHandler,
 } from 'react';
-import { Children } from 'react';
+import { Children, useEffect, useRef } from 'react';
 
 export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
 
@@ -40,10 +40,35 @@ export const PromptInputTextarea = ({
   onChange,
   className,
   placeholder = 'What would you like to know?',
-  minHeight = 48,
+  minHeight = 28,
   maxHeight = 164,
   ...props
 }: PromptInputTextareaProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const adjustHeight = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    // Reset height to get accurate scrollHeight
+    textarea.style.height = 'auto';
+
+    // Calculate new height based on content
+    const lineHeight = 16; // Compact single line height
+    const padding = 8; // py-1 = 4px top + 4px bottom = 8px total
+    const minHeightPx = lineHeight + padding; // Single line = 24px total
+    const maxHeightPx = (lineHeight * 5) + padding; // 5 rows max
+
+    const scrollHeight = textarea.scrollHeight;
+    const newHeight = Math.min(Math.max(scrollHeight, minHeightPx), maxHeightPx);
+
+    textarea.style.height = `${newHeight}px`;
+  };
+
+  useEffect(() => {
+    adjustHeight();
+  }, [props.value]);
+
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === 'Enter') {
       // Don't submit if IME composition is in progress
@@ -67,18 +92,22 @@ export const PromptInputTextarea = ({
 
   return (
     <Textarea
+      ref={textareaRef}
       className={cn(
-        'w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0',
-        'field-sizing-content max-h-[6lh] bg-transparent dark:bg-transparent',
-        'focus-visible:ring-0',
+        'w-full resize-none border-none rounded-none px-2  pt-6 shadow-none outline-none ring-0',
+        'bg-transparent dark:bg-transparent overflow-y-auto',
+        'focus-visible:ring-0 leading-4 mt- mb-0',
         className
       )}
       name="message"
       onChange={(e) => {
         onChange?.(e);
+        adjustHeight();
       }}
       onKeyDown={handleKeyDown}
+      onInput={adjustHeight}
       placeholder={placeholder}
+      style={{ height: '24px', minHeight: '24px', maxHeight: '88px' }}
       {...props}
     />
   );
@@ -126,7 +155,7 @@ export const PromptInputButton = ({
   return (
     <Button
       className={cn(
-        'shrink-0 gap-1.5 rounded-lg',
+        'shrink-0 gap-1.5 rounded-lg shadow-0 shadow-none',
         variant === 'ghost' && 'text-muted-foreground',
         newSize === 'default' && 'px-3',
         className
@@ -151,7 +180,7 @@ export const PromptInputSubmit = ({
   children,
   ...props
 }: PromptInputSubmitProps) => {
-  let Icon = <SendIcon className="size-4" />;
+  let Icon = <ArrowUp className="size-4 " />;
 
   if (status === 'submitted') {
     Icon = <Loader2Icon className="size-4 animate-spin" />;
@@ -163,7 +192,7 @@ export const PromptInputSubmit = ({
 
   return (
     <Button
-      className={cn('gap-1.5 rounded-lg', className)}
+      className={cn('gap-1.5 rounded-full', className)}
       size={size}
       type="submit"
       variant={variant}

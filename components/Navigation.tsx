@@ -9,10 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 
 export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth()
@@ -23,9 +21,13 @@ export default function Navigation() {
     router.push("/")
   }
   return (
-    <header className=" sticky-0 w-full top-0 right-0  bg-bakground">
-      <div className="flex justify-end items-center h-16 px-4 ">
-    
+    <header className=" sticky-0 w-full top-0 right-0  bg-bakground shadow-xs">
+      <div className="flex justify-between items-center h-[3.5rem] px-4 ">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-thin text-">Remotegrad</h1>
+        </div>
+
+
 
         {isAuthenticated && user && (
           <DropdownMenu>

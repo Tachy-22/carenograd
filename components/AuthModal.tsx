@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 interface AuthModalProps {
   isOpen: boolean
@@ -15,28 +16,39 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const handleGoogleAuth = () => {
-    window.location.href = "/api/auth/google"
+  const router = useRouter()
+
+  const handleAuthRedirect = () => {
+    onClose()
+    router.push("/auth")
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md p-10">
         <DialogHeader>
-          <DialogTitle>Sign in to start your graduate school journey</DialogTitle>
-          <DialogDescription>
-            Access personalized AI guidance, document analysis, and application tracking
+          <DialogTitle className="text-center font-bold text-3xl mb-2">Welcome back</DialogTitle>
+          <DialogDescription className="text-center mb-2 text-xl">
+            Log in or sign up to get smarter responses, upload files and images, and more.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <Button
-            onClick={handleGoogleAuth}
-            className="w-full"
+            onClick={handleAuthRedirect}
+            className="w-full rounded-full"
             size="lg"
           >
-            Continue with Google
+            Log in
           </Button>
 
+          <Button
+            onClick={handleAuthRedirect}
+            variant="outline"
+            className="w-full rounded-full"
+            size="lg"
+          >
+            Sign up for free
+          </Button>
         </div>
 
       </DialogContent>

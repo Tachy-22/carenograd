@@ -57,12 +57,11 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
         <div className="flex justify-between"> <div className="flex items-center gap-3">
           <Image
             src="/logo.png"
-            alt="Remograd Logo"
+            alt="Remotegrad Logo"
             width={32}
             height={32}
             className="rounded-md"
           />
-          <span className="text-lg font-semibold">Remograd</span>
 
         </div>          <SidebarTrigger />
         </div>

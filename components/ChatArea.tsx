@@ -24,7 +24,7 @@ import { Response } from '@/components/ai-elements/response'
 import { Loader } from '@/components/ai-elements/loader'
 import { Tool, ToolHeader, ToolContent } from '@/components/ai-elements/tool'
 import { Task, TaskTrigger, TaskContent, TaskItem } from '@/components/ai-elements/task'
-import { File, X, Check, AlertCircle, Paperclip } from "lucide-react"
+import { File, X, Check, AlertCircle, Paperclip, CheckCircle } from "lucide-react"
 
 interface ChatAreaProps {
   conversationId?: string
@@ -246,7 +246,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
   console.log("ess", initialMessages)
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden justify-between max-w-4xl mx-auto w-full" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden justify-between max-w-3xl mx-auto w-full" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
       <Conversation className="h-full">
         <ConversationContent>
           {/* Render initial messages from server-side fetch */}
@@ -284,15 +284,15 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
                   {message.parts.filter(part => part.type === 'tool-ai-tool').length > 0 && (
                     <Task>
                       <TaskTrigger title="Tasks" />
-                      <TaskContent style={{ backgroundColor: '#fffffff7' }} className="  border border-black rounded-lg mt-2 p-2 ">
+                      <TaskContent className=" bg-gray-50/50 border border-gray-300 rounded-lg mt-2 p-2 ">
                         {message.parts
                           .filter(part => part.type === 'tool-ai-tool')
                           .map((part, i) => (
                             <Fragment key={`${message.id}-tool-${i}`}>
                               {(part as any).output ? (
-                                <TaskItem className="text-muted-foreground" >{(part as any).output?.result}</TaskItem>
+                                <TaskItem className="text-muted-foreground flex gap-2 -ml-3" ><><CheckCircle /></>{(part as any).output?.result}</TaskItem>
                               ) : (
-                                <TaskItem className="text-muted-foreground" >{(part as any).input?.description || 'Processing...'}</TaskItem>
+                                <TaskItem className="text-muted-foreground flex gap-2 -ml-3" ><><Loader className="animate-spin" /></>{(part as any).input?.description || 'Processing...'}</TaskItem>
                               )}
                             </Fragment>
                           ))}
@@ -327,7 +327,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         <ConversationScrollButton />
       </Conversation>
 
-      <PromptInput onSubmit={handleSubmit} className="mt-4  border">
+      <PromptInput onSubmit={handleSubmit} className="my-4 px-2 pb-2 pt-0 rounded-4xl  border mb-4 flex items-end">
         {attachedFile && (
           <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-2">
             <File className="h-4 w-4 text-red-600" />
@@ -341,23 +341,27 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
             </button>
           </div>
         )}
+        <PromptInputButton
+          onClick={() => fileInputRef.current?.click()}
+          disabled={status === "streaming"}
+          title="Attach PDF document"
+          variant={"ghost"}
+          className=" shadow-none rounded-full"
+        >
+          <Paperclip className="h-4 w-4" />
+        </PromptInputButton>
         <PromptInputTextarea
           placeholder="Ask me about graduate programs..."
           onChange={(e) => setInput(e.target.value)}
           value={input}
         />
-        <PromptInputToolbar>
+        <PromptInputSubmit disabled={!input.trim() && !attachedFile} status={status} />
+
+        {/* <PromptInputToolbar>
           <PromptInputTools>
-            <PromptInputButton
-              onClick={() => fileInputRef.current?.click()}
-              disabled={status === "streaming"}
-              title="Attach PDF document"
-            >
-              <Paperclip className="h-4 w-4" />
-            </PromptInputButton>
+
           </PromptInputTools>
-          <PromptInputSubmit disabled={!input.trim() && !attachedFile} status={status} />
-        </PromptInputToolbar>
+        </PromptInputToolbar> */}
       </PromptInput>
 
       {/* Hidden file input */}
