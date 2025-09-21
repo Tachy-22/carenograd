@@ -78,7 +78,7 @@ export default function AnalyticsPage() {
       console.log('DEBUG Full API response:', data)
       
       setMetrics(data)
-      generateBehaviorData(data)
+      generateBehaviorData()
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
