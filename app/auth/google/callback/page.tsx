@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, Suspense, useState, useRef } from 'react'
+import { useEffect, Suspense, useState, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Cookies from 'js-cookie'
@@ -13,44 +13,7 @@ function CallbackContent() {
   const [, setDebugInfo] = useState<Record<string, unknown>>({})
   const hasProcessedRef = useRef(false)
 
-  useEffect(() => {
-    // COMPREHENSIVE DEBUGGING - Log everything
-    const currentUrl = window.location.href
-    const allParams = Object.fromEntries(searchParams.entries())
-    const token = searchParams.get('token')
-    const userParam = searchParams.get('user')
-    const error = searchParams.get('error')
-    
-    const debug = {
-      currentUrl,
-      allParams,
-      hasToken: !!token,
-      hasUser: !!userParam,
-      hasError: !!error,
-      tokenLength: token?.length || 0,
-      userLength: userParam?.length || 0,
-      searchParamsSize: searchParams.toString().length,
-      timestamp: new Date().toISOString()
-    }
-    
-    console.log('🔍 CALLBACK DEBUG INFO:', debug)
-    setDebugInfo(debug)
-    
-    // Prevent multiple runs
-    if (hasProcessedRef.current || isProcessing) {
-      console.log('⚠️ Skipping callback processing - already processed or processing')
-      return
-    }
-
-    // Wait a bit to ensure URL params are fully loaded
-    const timeoutId = setTimeout(() => {
-      handleCallback()
-    }, 100)
-
-    return () => clearTimeout(timeoutId)
-  }, [searchParams, isProcessing]) // Watch searchParams changes
-
-  const handleCallback = async () => {
+  const handleCallback = useCallback(async () => {
     if (hasProcessedRef.current) return
     
     hasProcessedRef.current = true
@@ -185,7 +148,44 @@ function CallbackContent() {
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [searchParams, login, router])
+
+  useEffect(() => {
+    // COMPREHENSIVE DEBUGGING - Log everything
+    const currentUrl = window.location.href
+    const allParams = Object.fromEntries(searchParams.entries())
+    const token = searchParams.get('token')
+    const userParam = searchParams.get('user')
+    const error = searchParams.get('error')
+    
+    const debug = {
+      currentUrl,
+      allParams,
+      hasToken: !!token,
+      hasUser: !!userParam,
+      hasError: !!error,
+      tokenLength: token?.length || 0,
+      userLength: userParam?.length || 0,
+      searchParamsSize: searchParams.toString().length,
+      timestamp: new Date().toISOString()
+    }
+    
+    console.log('🔍 CALLBACK DEBUG INFO:', debug)
+    setDebugInfo(debug)
+    
+    // Prevent multiple runs
+    if (hasProcessedRef.current || isProcessing) {
+      console.log('⚠️ Skipping callback processing - already processed or processing')
+      return
+    }
+
+    // Wait a bit to ensure URL params are fully loaded
+    const timeoutId = setTimeout(() => {
+      handleCallback()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchParams, isProcessing, handleCallback])
 
   // Show debug info in development
   // if (process.env.NODE_ENV === 'development') {

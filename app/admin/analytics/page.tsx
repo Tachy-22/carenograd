@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     fetchMetrics(timeRange)
     generateBehaviorData()
-  }, [timeRange])
+  }, [timeRange, fetchMetrics])
 
   const calculateTrend = (data: ChartDataPoint[]) => {
     if (data.length < 2) return 0
