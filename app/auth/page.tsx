@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import Link from "next/link"
-import Navigation from "@/components/Navigation"
 import { toast } from "sonner"
 
 export default function AuthPage() {
@@ -46,7 +45,7 @@ export default function AuthPage() {
           </div>
           <h1 className="text-3xl font-bold mb-2">Log in or sign up</h1>
           <p className="text-muted-foreground text-lg">
-            You'll get smarter responses and can upload files, images, and more.
+            You&apos;ll get smarter responses and can upload files, images, and more.
           </p>
         </div>
 

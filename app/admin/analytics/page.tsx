@@ -3,14 +3,12 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendingUp, TrendingDown, Users, MessageSquare, BarChart3, Clock, Target, Zap } from "lucide-react"
+import { TrendingUp, TrendingDown, BarChart3, Target, Zap } from "lucide-react"
 import { 
-  AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  ResponsiveContainer, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, 
-  PolarRadiusAxis, Radar, ScatterChart, Scatter 
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, 
+  ResponsiveContainer
 } from "recharts"
 
 interface ChartDataPoint {
@@ -56,7 +54,7 @@ const chartConfig = {
 
 export default function AnalyticsPage() {
   const [metrics, setMetrics] = useState<CombinedMetrics | null>(null)
-  const [behaviorData, setBehaviorData] = useState<UserBehaviorData | null>(null)
+  const [, setBehaviorData] = useState<UserBehaviorData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState("30")
@@ -89,7 +87,7 @@ export default function AnalyticsPage() {
     }
   }
 
-  const generateBehaviorData = (metrics: CombinedMetrics) => {
+  const generateBehaviorData = () => {
     // TODO: Replace with actual API calls to your analytics backend
     // For now, don't show behavior data until real endpoints are available
     setBehaviorData(null)
@@ -97,6 +95,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchMetrics(timeRange)
+    generateBehaviorData()
   }, [timeRange])
 
   const calculateTrend = (data: ChartDataPoint[]) => {

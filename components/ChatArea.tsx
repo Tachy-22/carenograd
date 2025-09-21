@@ -17,18 +17,16 @@ import {
   PromptInput,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
   PromptInputButton,
 } from '@/components/ai-elements/prompt-input'
 import { Response } from '@/components/ai-elements/response'
 import { Actions, Action } from '@/components/ai-elements/actions'
 import { Loader } from '@/components/ai-elements/loader'
-import { Tool, ToolHeader, ToolContent } from '@/components/ai-elements/tool'
 import { Task, TaskTrigger, TaskContent, TaskItem } from '@/components/ai-elements/task'
-import { File, X, Copy, Check, AlertCircle, Paperclip, CheckCircle } from "lucide-react"
+import { File, X, Copy, Check, Paperclip, CheckCircle } from "lucide-react"
 import { revalidateData } from "@/lib/revalidate"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 interface ChatAreaProps {
   conversationId?: string | null
@@ -55,7 +53,7 @@ interface DatabaseMessage {
     toolsUsed?: string[]
     stepsUsed?: number
     executionTime?: number
-    errors?: unknown []
+    errors?: unknown[]
   }
   created_at: string
 }
@@ -365,11 +363,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Welcome to Carenograd
+            Carenograd
           </h1>
-          <p className=" text-gray-600 dark:text-gray-400">
-            Your AI Assistant for Graduate School Success
-          </p>
         </div>
 
         <div className="w-full max-w-4xl">
@@ -410,6 +405,22 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
           </PromptInput>
         </div>
 
+        {/* Terms and Privacy Policy for unauthenticated users */}
+        {!isAuthenticated && (
+          <div className="text-center mt-6 absolute bottom-2 right-0 left-0">
+            <p className="text-sm ">
+              By messaging Carenograd, you agree to our{" "}
+              <Link href="/terms" className="underline font-semibold ">
+                Terms
+              </Link>{" "}
+              and have read our{" "}
+              <Link href="/privacy" className="underline font-semibold">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+        )}
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -477,9 +488,9 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
                             ?.map((part, i) => {
                               if (!part) return null
 
-                              const hasOutput = (part as any).output
-                              const description = (part as any).input?.description || 'Processing...'
-                              const result = (part as any).output?.result
+                              const hasOutput = (part as unknown as { output?: unknown }).output
+                              const description = (part as unknown as { input?: { description?: string } }).input?.description || 'Processing...'
+                              const result = (part as unknown as { output?: { result?: string } }).output?.result
 
                               return (
                                 <TaskItem key={`${message.id}-tool-${i}`} className="text-muted-foreground flex gap-2 -ml-3">
@@ -593,6 +604,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         </div>
 
       </PromptInput>
+
+
 
       {/* Hidden file input */}
       <input

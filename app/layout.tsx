@@ -23,6 +23,14 @@ export const metadata: Metadata = {
   description: "Your AI Assistant for Graduate School Success",
 };
 
+interface RawConversation {
+  id: string
+  title: string
+  lastMessage?: string
+  updated_at: string
+  created_at: string
+}
+
 
 export interface Conversation {
   id: string
@@ -76,9 +84,9 @@ async function fetchConversations(token: string): Promise<Conversation[] | null>
       }
 
       // Sort conversations by updated_at in descending order (most recent first)
-      return conversations.sort((a: any, b: any) =>
+      return conversations.sort((a: RawConversation, b: RawConversation) =>
         new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-      ).map((conv: any) => ({
+      ).map((conv: RawConversation) => ({
         id: conv.id,
         title: conv.title,
         lastMessage: conv.lastMessage || "",

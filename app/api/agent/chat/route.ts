@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
 
-async function makeBackendRequest(authToken: string, messageData: any) {
+async function makeBackendRequest(authToken: string, messageData: unknown) {
   return fetch(`${API_BASE_URL}/agent/chat/stream`, {
     method: "POST",
     headers: {

@@ -1,6 +1,6 @@
 "use client"
 
-import { File, Download } from "lucide-react"
+import { File } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FileAttachmentProps {
@@ -30,7 +30,6 @@ export default function FileAttachment({
   fileName, 
   fileSize, 
   fileType, 
-  uploadedAt, 
   className 
 }: FileAttachmentProps) {
   return (

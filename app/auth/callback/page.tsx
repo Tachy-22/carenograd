@@ -10,7 +10,7 @@ function CallbackContent() {
   const searchParams = useSearchParams()
   const { login } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<any>({})
+  const [, setDebugInfo] = useState<Record<string, unknown>>({})
   const hasProcessedRef = useRef(false)
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function CallbackContent() {
     }, 100)
 
     return () => clearTimeout(timeoutId)
-  }, [searchParams]) // Watch searchParams changes
+  }, [searchParams, isProcessing]) // Watch searchParams changes
 
   const handleCallback = async () => {
     if (hasProcessedRef.current) return
@@ -83,6 +83,7 @@ function CallbackContent() {
         // Check if this might be the initial OAuth redirect from Google
         const code = searchParams.get('code')
         const state = searchParams.get('state')
+        console.log('State:', state)
         
         if (code) {
           console.log('🔄 Found OAuth code, this seems to be Google callback, not our callback')

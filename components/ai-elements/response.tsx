@@ -86,7 +86,7 @@ const processImageUrls = (text: string, onImageClick: (url: string) => void) => 
   const markdownImageRegex = /\[([^\]]*)\]\((https?:\/\/[^\s\)]+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?[^\s\)]*)?)\)/gi;
 
   // Replace markdown image links with just the image URL for processing
-  let processedText = text.replace(markdownImageRegex, (_match, _altText, url) => {
+  const processedText = text.replace(markdownImageRegex, (_match, _altText, url) => {
     return url; // Replace the entire markdown link with just the URL
   });
 
@@ -139,7 +139,7 @@ const processImageUrls = (text: string, onImageClick: (url: string) => void) => 
 };
 
 export const Response = memo(
-  ({ className, children, showActions = true, role, ...props }: ResponseProps) => {
+  ({ className, children, ...props }: ResponseProps) => {
     const [modalImage, setModalImage] = useState<string | null>(null);
     
     // Check if content contains file attachments, image URLs (plain or in markdown links)

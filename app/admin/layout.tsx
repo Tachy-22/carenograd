@@ -15,7 +15,7 @@ interface User {
 async function checkAdminAccess(token: string): Promise<User | null> {
   try {
     // First, get user profile to check their actual role
-    const profileResponse = await fetch("http://localhost:3001/api/auth/profile", {
+    const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/profile`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"

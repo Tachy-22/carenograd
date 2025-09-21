@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import TokenUsageDisplay from "@/components/TokenUsageDisplay"
 import { PenBox } from "lucide-react"
+import Image from "next/image"
 
 export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth()
@@ -38,7 +39,17 @@ export default function Navigation() {
       <div className="flex justify-between items-center h-[3.5rem] px-4 ">
         <div className="flex items-center space-x-4">
           {isAuthenticated && <SidebarTrigger className="md:hidden" />}
-          <h1 className="text-xl  text-">Carenograd</h1>
+          {isAuthenticated ? (
+            <h1 className="text-xl font-semibold">Carenograd</h1>
+          ) : (
+            <Image
+              src="/logo.png"
+              alt="Carenograd Logo"
+              width={32}
+              height={32}
+              className="rounded-md"
+            />
+          )}
         </div>
 
         <div className="flex items-center space-x-4">
@@ -88,18 +99,18 @@ export default function Navigation() {
           ) : (
             <div className="flex items-center space-x-2">
               <Button
-                variant="ghost"
-                className="text-sm"
+                variant="default"
+                className="text-sm rounded-full"
                 onClick={() => window.location.href = "/auth"}
               >
-                Sign In
+                Log In
               </Button>
               <Button
-                variant="default"
-                className="text-sm"
+                variant="outline"
+                className="text-sm rounded-full"
                 onClick={() => window.location.href = "/auth"}
               >
-                Sign Up
+                Sign Up For Free
               </Button>
             </div>
           )}

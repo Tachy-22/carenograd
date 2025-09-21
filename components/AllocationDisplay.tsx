@@ -82,7 +82,7 @@ export function AllocationDisplay() {
       {/* Warning Alert */}
       {allocation.shouldWarn && (
         <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
-          ⚠️ You're approaching your daily limit. Your allocation may increase if fewer users are active.
+          ⚠️ You&apos;re approaching your daily limit. Your allocation may increase if fewer users are active.
         </div>
       )}
 

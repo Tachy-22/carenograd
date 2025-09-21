@@ -3,7 +3,7 @@
 import React, { useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 //import { useRouter } from "next/navigation"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { SidebarInset } from "@/components/ui/sidebar"
 import ChatSidebar from "@/components/Sidebar"
 import Navigation from "@/components/Navigation"
 import TokenStatusIndicator from "@/components/TokenStatusIndicator"

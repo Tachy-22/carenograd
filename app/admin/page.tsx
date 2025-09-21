@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Users, MessageSquare, BarChart3, Activity, TrendingUp, Clock, UserCheck } from "lucide-react"
-import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { Users, BarChart3, Activity, TrendingUp, Clock, UserCheck } from "lucide-react"
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 
 interface DashboardStats {
   users: {
@@ -101,9 +101,9 @@ export default function AdminDashboard() {
         console.log('DEBUG Dashboard - conversations:', conversationsSliced)
         console.log('DEBUG Dashboard - messages:', messagesSliced)
         
-        const conversationGrowth = conversationsSliced.map((item: any) => {
+        const conversationGrowth = conversationsSliced.map((item: { date: string; count: number }) => {
           // Find matching message data by date
-          const matchingMessage = messagesSliced.find((msgItem: any) => msgItem.date === item.date)
+          const matchingMessage = messagesSliced.find((msgItem: { date: string; count: number }) => msgItem.date === item.date)
           const result = {
             date: item.date,
             conversations: item.count,

@@ -1,7 +1,6 @@
 "use client"
 
 import { useAllocation } from "@/contexts/TokenUsageContext"
-import { useEffect, useState } from "react"
 import { ChevronDown, BarChart3 } from "lucide-react"
 import {
   DropdownMenu,
@@ -13,15 +12,15 @@ export default function TokenUsageDisplay() {
   const { allocation, isLoading } = useAllocation()
 
  
-  const getCircleColor = (warningLevel: string) => {
-    switch (warningLevel) {
-      case "CRITICAL": return "bg-red-500"
-      case "HIGH": return "bg-orange-500"
-      case "MEDIUM": return "bg-yellow-500"
-      case "LOW": return "bg-green-500"
-      default: return "bg-green-500"
-    }
-  }
+  // const getCircleColor = (warningLevel: string) => {
+  //   switch (warningLevel) {
+  //     case "CRITICAL": return "bg-red-500"
+  //     case "HIGH": return "bg-orange-500"
+  //     case "MEDIUM": return "bg-yellow-500"
+  //     case "LOW": return "bg-green-500"
+  //     default: return "bg-green-500"
+  //   }
+  // }
 
   const getProgressColor = (warningLevel: string) => {
     switch (warningLevel) {

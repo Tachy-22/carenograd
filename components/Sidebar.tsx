@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { Pen, Search, LogOut, PenBox, MessageSquare } from "lucide-react"
+import { Search, LogOut, PenBox, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -38,7 +38,7 @@ interface ChatSidebarProps {
   conversations: Conversation[] | null
 }
 
-export default function ChatSidebar({ open, onClose, conversations }: ChatSidebarProps) {
+export default function ChatSidebar({ conversations }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [isLogoHovered, setIsLogoHovered] = useState(false)
   const { logout } = useAuth()
