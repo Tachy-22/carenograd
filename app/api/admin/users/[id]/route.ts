@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -11,7 +11,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
     }
 
-    const response = await fetch(`http://localhost:3000/admin/users/${params.id}`, {
+    const resolvedParams = await params
+    const response = await fetch(`http://localhost:3000/admin/users/${resolvedParams.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': authHeader,
