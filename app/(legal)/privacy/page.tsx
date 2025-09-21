@@ -105,7 +105,7 @@ export default function PrivacyPolicy() {
               <div className="space-y-4 text-muted-foreground">
                 <p>
                   We may update this privacy policy from time to time. We will notify you of 
-                  any changes by posting the new policy on this page and updating the "Last updated" date.
+                  any changes by posting the new policy on this page and updating the &quot;Last updated&quot; date.
                 </p>
               </div>
             </section>
