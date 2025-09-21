@@ -3,7 +3,8 @@
 import { useEffect, useState, Fragment, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
-import { useConversations } from "@/contexts/ConversationsContext"
+import { useAllocation } from "@/contexts/TokenUsageContext"
+import Cookies from "js-cookie"
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import {
@@ -21,13 +22,16 @@ import {
   PromptInputButton,
 } from '@/components/ai-elements/prompt-input'
 import { Response } from '@/components/ai-elements/response'
+import { Actions, Action } from '@/components/ai-elements/actions'
 import { Loader } from '@/components/ai-elements/loader'
 import { Tool, ToolHeader, ToolContent } from '@/components/ai-elements/tool'
 import { Task, TaskTrigger, TaskContent, TaskItem } from '@/components/ai-elements/task'
-import { File, X, Check, AlertCircle, Paperclip, CheckCircle } from "lucide-react"
+import { File, X, Copy, Check, AlertCircle, Paperclip, CheckCircle } from "lucide-react"
+import { revalidateData } from "@/lib/revalidate"
+import { cn } from "@/lib/utils"
 
 interface ChatAreaProps {
-  conversationId?: string
+  conversationId?: string | null
   initialMessages?: DatabaseMessage[]
 }
 
@@ -48,58 +52,154 @@ interface DatabaseMessage {
       toolName: string
     }>
     finishReason?: string
+    toolsUsed?: string[]
+    stepsUsed?: number
+    executionTime?: number
+    errors?: unknown []
   }
   created_at: string
 }
 
+// Component for handling copy functionality
+const MessageWithCopy = ({ content, role }: { content: string; role: 'user' | 'assistant' | 'system' }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  };
+
+  const isAssistant = role === 'assistant';
+  const isUser = role === 'user';
+
+  // Position classes based on role
+  const positionClasses = isAssistant
+    ? '-bottom-[2.5rem] -left-[0.5rem]'
+    : isUser
+      ? '-bottom-[3.5rem] -right-[0.5rem]'
+      : 'bottom-0 right-2'; // fallback
+
+  return (
+    <div className="group relative">
+      <Response role={role}>{content}</Response>
+      <Actions className={cn(
+        'absolute opacity-0 group-hover:opacity-100 transition-opacity rounded  z-30',
+        positionClasses
+      )}>
+        <Action
+          onClick={handleCopy}
+          tooltip={copied ? "Copied!" : "Copy text"}
+          label={copied ? "Copied" : "Copy"}
+        >
+          {copied ? (
+            <Check className="size-4 text-green-600" />
+          ) : (
+            <Copy className="size-4" />
+          )}
+        </Action>
+      </Actions>
+    </div>
+  );
+};
+
 export default function ChatArea({ conversationId, initialMessages = [] }: ChatAreaProps) {
-  const { user, token, isAuthenticated, isLoading } = useAuth()
-  const { setActiveConversation, activeConversation } = useConversations()
+  const { token, isAuthenticated, isLoading } = useAuth()
+  const { checkCanMakeRequest } = useAllocation()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [input, setInput] = useState("")
-  const [currentConversationId, setCurrentConversationId] = useState<string>(conversationId || "n")
-  const conversationIdRef = useRef<string>(activeConversation || conversationId || "n")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+
+  const pendingNavigationIdRef = useRef<string | null>(null)
 
   const { messages, status, sendMessage } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/agent/chat",
-      headers: () => {
+      headers: async () => {
         const headers: Record<string, string> = {}
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`
+
+        // Get fresh token from localStorage (updated by auth system)
+        const currentToken = Cookies.get('access_token') || localStorage.getItem('jwt_token') || localStorage.getItem('access_token') || token
+
+        if (currentToken) {
+          headers["Authorization"] = `Bearer ${currentToken}`
+        } else {
+          console.warn('No auth token available for AI request')
         }
+
         return headers
       },
       body: () => {
         const body: { conversationId?: string } = {}
-        console.log("has CurrentId: ", conversationIdRef.current !== "n", conversationId, currentConversationId, conversationIdRef.current)
-        if (conversationIdRef.current !== "n") {
-          console.log("attatching this :", conversationIdRef.current)
-          body.conversationId = conversationIdRef.current
+        if (conversationId) {
+          body.conversationId = conversationId
         }
         return body
       }
     }),
     onError: (error: Error) => {
       console.error("Chat error:", error)
+      setIsWaitingForResponse(false)
+      pendingNavigationIdRef.current = null
     },
     onData: (data) => {
       console.log('Received data part from server:', data)
+      console.log('Current isWaitingForResponse:', isWaitingForResponse)
 
-      // Check if this is conversation data and we're in a new chat
-      if (currentConversationId === "n" && data && typeof data === 'object') {
+      // Validate streaming data structure before processing
+      if (!data || typeof data !== 'object') {
+        console.warn('Invalid data received in stream:', data)
+        return
+      }
+
+      // First data chunk means response has started - always clear waiting state
+      setIsWaitingForResponse(false)
+
+      // Handle new conversation creation when conversationId is null - store for later navigation
+      console.log('onData - conversationId:', conversationId, 'data:', data)
+      if (conversationId === null) {
         if ('type' in data && data.type === 'data-conversation' && 'data' in data && data.data && typeof data.data === 'object' && 'conversationId' in data.data) {
-          const conversationIdv = data.data.conversationId
-          console.log('Captured conversationId from data:', conversationIdv)
-          //  conversationIdv !== "n" && router.push(`/chat/${conversationIdv}`)
-          setCurrentConversationId(conversationIdv as string)
-          setActiveConversation(conversationIdv as string)
-          conversationIdRef.current = conversationIdv as string
+          const newConversationId = data.data.conversationId as string
+          console.log('New conversation created, will navigate after streaming completes:', newConversationId)
+          console.log('Setting pendingNavigationId to:', newConversationId)
+          pendingNavigationIdRef.current = newConversationId
         }
       }
+    },
+    onFinish: async () => {
+      console.log('AI response completed - dispatching token usage update event')
+      console.log('onFinish - pendingNavigationId:', pendingNavigationIdRef.current)
+      console.log('onFinish - conversationId:', conversationId)
+      setIsWaitingForResponse(false)
+      window.dispatchEvent(new CustomEvent('ai-response-complete'))
+
+      // Navigate to new conversation if one was created during streaming
+      if (pendingNavigationIdRef.current) {
+        console.log('Streaming complete, navigating to:', pendingNavigationIdRef.current)
+        const newConversationId = pendingNavigationIdRef.current
+        pendingNavigationIdRef.current = null
+
+
+        // Navigate immediately without server revalidation for smooth transition
+        router.push(`/chat/${newConversationId}`)
+        await revalidateData(`/chat/${newConversationId}`)
+
+        console.log('Updated URL to new conversation')
+      } else if (conversationId && conversationId !== 'null') {
+        // For existing conversations, revalidate the current conversation messages
+        console.log('Revalidating current conversation messages:', conversationId)
+        await revalidateData(`/chat/${conversationId}`)
+
+      }
+      await revalidateData(`/chat`)
+
     }
   })
 
@@ -107,22 +207,44 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     e.preventDefault()
     if ((!input.trim() && !attachedFile) || status === "streaming") return
 
-    let messageText = input
+    // Don't allow submission if auth is still loading or user is not authenticated
+    if (isLoading || !isAuthenticated || !token) {
+      console.warn('Cannot submit: auth not ready', { isLoading, isAuthenticated, hasToken: !!token })
+      return
+    }
 
-    if (attachedFile) {
+    // Clear input immediately for better UX
+    const messageText = input
+    const fileToSend = attachedFile
+    setInput("")
+    setAttachedFile(null)
+    setIsWaitingForResponse(true)
+
+    // Check allocation after clearing input
+    const canMakeRequest = await checkCanMakeRequest()
+    if (!canMakeRequest) {
+      alert('Daily request limit exceeded. Please try again later or when fewer users are active.')
+      // Restore input if quota check fails
+      setInput(messageText)
+      setAttachedFile(fileToSend)
+      setIsWaitingForResponse(false)
+      return
+    }
+
+    if (fileToSend) {
       try {
         // Validate file size (50MB limit)
         const maxSize = 50 * 1024 * 1024 // 50MB
-        if (attachedFile.size > maxSize) {
+        if (fileToSend.size > maxSize) {
           console.error('File too large. Maximum size is 50MB')
           return
         }
 
         // Create FormData for file upload
         const formData = new FormData()
-        formData.append('file', attachedFile)
+        formData.append('file', fileToSend)
 
-        console.log(`Uploading PDF: ${attachedFile.name} (${(attachedFile.size / 1024 / 1024).toFixed(1)} MB)`)
+        console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
 
         // Upload file to dedicated endpoint
         const uploadResponse = await fetch('http://localhost:3000/agent/upload', {
@@ -141,10 +263,19 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
         console.log('Upload successful:', uploadResult)
 
-        // If user added text with the file, send it as a follow-up message
-        if (messageText.trim()) {
-          sendMessage({ text: messageText })
+        // Create message with file metadata
+        const fileMetadata = {
+          type: 'file_attachment',
+          fileName: fileToSend.name,
+          fileSize: fileToSend.size,
+          fileType: fileToSend.type,
+          uploadedAt: new Date().toISOString()
         }
+
+        // Combine user message with file metadata
+        const messageWithFile = `${messageText.trim() ? messageText + '\n\n' : ''}[FILE_ATTACHMENT:${JSON.stringify(fileMetadata)}]`
+
+        sendMessage({ text: messageWithFile })
       } catch (error) {
         console.error('File upload failed:', error)
         return
@@ -152,9 +283,6 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     } else {
       sendMessage({ text: messageText })
     }
-
-    setInput("")
-    setAttachedFile(null)
   }
 
 
@@ -198,170 +326,272 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     }
   }, [isLoading, isAuthenticated, searchParams, router])
 
-  // Update ref when activeConversation changes
+  // Log when conversationId changes for debugging
   useEffect(() => {
-    conversationIdRef.current = activeConversation || conversationId || "n"
-  }, [activeConversation, conversationId])
+    console.log('ChatArea: conversationId changed to:', conversationId)
+  }, [conversationId])
 
 
-  // Parse content to show tool actions and final response
-  const parseStreamingContent = (text: string) => {
-    const components: React.ReactNode[] = []
 
-    // Extract final content (skip noise)
-    const lines = text.split('\n').filter(line => line.trim())
-    const finalContent: string[] = []
+  // Parse content to separate progress from final response using --- separator
+  const parseStreamContent = (text: string) => {
+    const separatorPattern = /\n\n---\n\n/
+    const parts = text.split(separatorPattern)
 
-    lines.forEach((line) => {
-      const trimmed = line.trim()
-
-      //   Skip noise but keep meaningful final content
-      if (trimmed.startsWith('🔄 Starting new analysis step...') ||
-        trimmed.startsWith('✨ Step completed:') ||
-        trimmed.startsWith('✨ Completed reasoning step') ||
-        trimmed.startsWith('🎉 Analysis complete!') ||
-        trimmed.startsWith('✅')) {
-        return
+    if (parts.length >= 2) {
+      return {
+        progress: parts[0].trim(),
+        response: parts.slice(1).join('\n\n---\n\n').trim(),
+        hasResponse: true
       }
-
-      if (trimmed.length > 0) {
-        finalContent.push(trimmed)
+    } else {
+      return {
+        progress: text.trim(),
+        response: '',
+        hasResponse: false
       }
-    })
-
-
-
-    // Add the final response content
-    if (finalContent.length > 0) {
-      const cleanText = finalContent.join('\n\n')
-      components.push(
-        <Response key="final-response">{cleanText}</Response>
-      )
     }
-
-    return components
   }
 
   console.log({ messages })
   console.log("ess", initialMessages)
 
+  // Check if we have any messages (initial or streaming)
+  const hasMessages = initialMessages.length > 0 || messages.length > 0
+
+  // If no messages, show centered layout
+  if (!hasMessages) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            Welcome to Carenograd
+          </h1>
+          <p className=" text-gray-600 dark:text-gray-400">
+            Your AI Assistant for Graduate School Success
+          </p>
+        </div>
+
+        <div className="w-full max-w-4xl">
+          <PromptInput onSubmit={handleSubmit} className="my-4 max-w-[95%] mx-auto px-2 pb-2 pt-0 rounded-4xl  border mb-6 flex items-end">
+            {attachedFile && (
+              <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-2">
+                <File className="h-4 w-4 text-red-600" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">{attachedFile.name}</span>
+                <button
+                  onClick={() => setAttachedFile(null)}
+                  className="ml-auto p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                  title="Remove attachment"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            <div className="flex items-end w-full">
+
+              <PromptInputButton
+                onClick={() => fileInputRef.current?.click()}
+                disabled={status === "streaming"}
+                title="Attach PDF document"
+                variant={"ghost"}
+                className="shadow-none rounded-full"
+              >
+                <Paperclip className="h-4 w-4" />
+              </PromptInputButton>
+              <PromptInputTextarea
+                placeholder="Ask me about graduate programs..."
+                onChange={(e) => setInput(e.target.value)}
+                value={input}
+                className="min-h-[60px]"
+              />
+              <PromptInputSubmit disabled={!input.trim() && !attachedFile} status={status} />
+
+            </div>
+          </PromptInput>
+        </div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf"
+          onChange={(e) => handleFileAttach(e.target.files)}
+          className="hidden"
+        />
+      </div>
+    )
+  }
+
+  // Normal layout when messages exist
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden justify-between max-w-3xl mx-auto w-full" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-      <Conversation className="h-full">
+    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden justify-between max-w-4xl mx-auto w-full" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+      <Conversation className="h-full pt-4">
         <ConversationContent>
           {/* Render initial messages from server-side fetch */}
           {initialMessages.map((dbMessage) => (
             <div key={dbMessage.id}>
               <Message from={dbMessage.role}>
                 <MessageContent>
-                  {/* Show tool calls from metadata if available */}
-                  {dbMessage.metadata.toolCalls && dbMessage.metadata.toolCalls.length > 0 && (
+                  {/* Show tools used from metadata for assistant messages */}
+                  {dbMessage.role === 'assistant' && dbMessage.metadata.toolsUsed && dbMessage.metadata.toolsUsed.length > 0 && (
                     <Task>
-                      <TaskTrigger title="Tools" />
-                      <TaskContent className="">
-                        {dbMessage.metadata.toolCalls.map((toolCall, i) => (
-                          <Fragment key={`${dbMessage.id}-tool-${i}`}>
-                            <TaskItem className="text-muted-foreground w-fit rounded-full border p-2 py-1">
-                              {toolCall.toolName}
-                            </TaskItem>
-                          </Fragment>
+                      <TaskTrigger title="Tools Used" />
+                      <TaskContent className="bg-gray-50/50 border border-gray-300 rounded-lg mt-2 p-2">
+                        {dbMessage.metadata.toolsUsed.map((tool: string, i: number) => (
+                          <TaskItem key={`${dbMessage.id}-tool-${i}`} className="text-muted-foreground flex gap-2 -ml-3">
+                            <CheckCircle className="h-4 w-4" />
+                            {tool.replace('Tool', '')} {/* Clean up tool names */}
+                          </TaskItem>
                         ))}
+                        {dbMessage.metadata.executionTime && (
+                          <TaskItem className="text-muted-foreground flex gap-2 -ml-3 mt-1 text-xs opacity-70">
+                            <CheckCircle className="h-3 w-3" />
+                            {dbMessage.metadata.stepsUsed} steps • {((dbMessage.metadata.executionTime || 0) / 1000).toFixed(1)}s
+                          </TaskItem>
+                        )}
                       </TaskContent>
                     </Task>
                   )}
-                  <Response>{dbMessage.content}</Response>
+
+                  {/* Display message content for all messages */}
+                  <MessageWithCopy content={dbMessage.content} role={dbMessage.role} />
                 </MessageContent>
               </Message>
             </div>
           ))}
 
-          {/* Render current streaming messages */}
-          {messages.map((message) => (
+          {/* Only render streaming messages when actively streaming */}
+          {status === "streaming" && messages?.filter(message => message && message.id && message.role && message.parts).map((message) => (
             <div key={message.id}>
               <Message from={message.role}>
                 <MessageContent>
-                  {/* Render all tool parts in one Task component */}
-                  {message.parts.filter(part => part.type === 'tool-ai-tool').length > 0 && (
-                    <Task>
-                      <TaskTrigger title="Tasks" />
-                      <TaskContent className=" bg-gray-50/50 border border-gray-300 rounded-lg mt-2 p-2 ">
-                        {message.parts
-                          .filter(part => part.type === 'tool-ai-tool')
-                          .map((part, i) => (
-                            <Fragment key={`${message.id}-tool-${i}`}>
-                              {(part as any).output ? (
-                                <TaskItem className="text-muted-foreground flex gap-2 -ml-3" ><><CheckCircle /></>{(part as any).output?.result}</TaskItem>
-                              ) : (
-                                <TaskItem className="text-muted-foreground flex gap-2 -ml-3" ><><Loader className="animate-spin" /></>{(part as any).input?.description || 'Processing...'}</TaskItem>
-                              )}
-                            </Fragment>
-                          ))}
-                      </TaskContent>
-                    </Task>
-                  )}
 
-                  {/* Then render text parts */}
+                  {/* Single unified Task component for both tools and progress - only show during streaming */}
+                  {status === "streaming" && (message.parts?.filter(part => part && part.type === 'tool-ai-tool').length > 0 ||
+                    (message.role === 'assistant' && message.parts?.some(part => part?.type === 'text' && part.text))) && (
+                      <Task>
+                        <TaskTrigger title="Tasks" />
+                        <TaskContent className="bg-gray-50/50 border border-gray-300 rounded-lg mt-2 p-2">
+                          {message.parts
+                            ?.filter(part => part && (part.type === 'tool-ai-tool' || part.type?.startsWith('tool-')) && part.type !== 'tool-input-available')
+                            ?.map((part, i) => {
+                              if (!part) return null
+
+                              const hasOutput = (part as any).output
+                              const description = (part as any).input?.description || 'Processing...'
+                              const result = (part as any).output?.result
+
+                              return (
+                                <TaskItem key={`${message.id}-tool-${i}`} className="text-muted-foreground flex gap-2 -ml-3">
+                                  {hasOutput ? <CheckCircle className="h-4 w-4" /> : <Loader className="animate-spin h-4 w-4" />}
+                                  {hasOutput ? result : description}
+                                </TaskItem>
+                              )
+                            })}
+
+                          {message.role === 'assistant' && message.parts
+                            ?.filter(part => part && part.type === 'text')
+                            ?.map((part, i) => {
+                              if (!part || typeof part.text !== 'string') return null
+
+                              const parsed = parseStreamContent(part.text)
+                              if (parsed.progress) {
+                                // For quota retry messages, show only the latest line
+                                if (parsed.progress.includes('Quota limit reached') || parsed.progress.includes('Smart retry')) {
+                                  const lines = parsed.progress.split('\n').filter(line => line.trim())
+                                  const latestLine = lines[lines.length - 1] || parsed.progress
+                                  return (
+                                    <div key={`${message.id}-progress-${i}`} className="text-muted-foreground text-xs border-t pt-2 mt-2">
+                                      {latestLine}
+                                    </div>
+                                  )
+                                }
+                                return (
+                                  <div key={`${message.id}-progress-${i}`} className="text-muted-foreground whitespace-pre-wrap text-xs border-t pt-2 mt-2">
+                                    {parsed.progress}
+                                  </div>
+                                )
+                              }
+                              return null
+                            })}
+                        </TaskContent>
+                      </Task>
+                    )}
+
+                  {/* Then render final response only */}
                   {message.parts
-                    .filter(part => part.type === 'text')
-                    .map((part, i) => (
-                      <Fragment key={`${message.id}-text-${i}`}>
-                        {message.role === 'assistant' ? (
-                          parseStreamingContent(part.text).map((component, index) => (
-                            <Fragment key={`${message.id}-text-${i}-${index}`}>
-                              {component}
-                            </Fragment>
-                          ))
-                        ) : (
-                          <Response>{part.text}</Response>
-                        )}
-                      </Fragment>
-                    ))}
+                    ?.filter(part => part && part.type === 'text')
+                    ?.map((part, i) => {
+                      if (!part || typeof part.text !== 'string') return null
+
+                      if (message.role === 'assistant') {
+                        const parsed = parseStreamContent(part.text)
+                        return (
+                          <Fragment key={`${message.id}-text-${i}`}>
+                            {/* Show response section if it exists */}
+                            {parsed.hasResponse && parsed.response && (
+                              <MessageWithCopy content={parsed.response} role={message.role} />
+                            )}
+                          </Fragment>
+                        )
+                      } else {
+                        return (
+                          <Fragment key={`${message.id}-text-${i}`}>
+                            <MessageWithCopy content={part.text} role={message.role} />
+                          </Fragment>
+                        )
+                      }
+                    })}
                 </MessageContent>
               </Message>
             </div>
           ))}
 
 
-          {status === 'submitted' && <Loader />}
+          {isWaitingForResponse && <p className="flex items-center gap-1">
+
+            <span className="flex gap-1">
+              <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1 h-1 bg-current rounded-full animate-bounce"></span>
+            </span>
+          </p>}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
 
-      <PromptInput onSubmit={handleSubmit} className="my-4 px-2 pb-2 pt-0 rounded-4xl  border mb-4 flex items-end">
+      <PromptInput onSubmit={handleSubmit} className="my-4 max-w-[95%] mx-auto px-2 pb-2 pt-0 rounded-4xl  border mb-6  flex flex-col">
         {attachedFile && (
-          <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-2">
+          <div className="mb-2 w-fit mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-3xl flex items-center gap-2">
             <File className="h-4 w-4 text-red-600" />
-            <span className="text-sm text-gray-700 dark:text-gray-300">{attachedFile.name}</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300 w-fit">{attachedFile.name}</span>
             <button
               onClick={() => setAttachedFile(null)}
-              className="ml-auto p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+              className="ml-auto p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl w-fit"
               title="Remove attachment"
             >
               <X className="h-3 w-3" />
             </button>
           </div>
         )}
-        <PromptInputButton
-          onClick={() => fileInputRef.current?.click()}
-          disabled={status === "streaming"}
-          title="Attach PDF document"
-          variant={"ghost"}
-          className=" shadow-none rounded-full"
-        >
-          <Paperclip className="h-4 w-4" />
-        </PromptInputButton>
-        <PromptInputTextarea
-          placeholder="Ask me about graduate programs..."
-          onChange={(e) => setInput(e.target.value)}
-          value={input}
-        />
-        <PromptInputSubmit disabled={!input.trim() && !attachedFile} status={status} />
+        <div className="flex items-end">
+          <PromptInputButton
+            onClick={() => fileInputRef.current?.click()}
+            disabled={status === "streaming"}
+            title="Attach PDF document"
+            variant={"ghost"}
+            className=" shadow-none rounded-full"
+          >
+            <Paperclip className="h-4 w-4" />
+          </PromptInputButton>
+          <PromptInputTextarea
+            placeholder="Ask me about graduate programs..."
+            onChange={(e) => setInput(e.target.value)}
+            value={input}
+          />
+          <PromptInputSubmit disabled={!input.trim() && !attachedFile} status={status} />
+        </div>
 
-        {/* <PromptInputToolbar>
-          <PromptInputTools>
-
-          </PromptInputTools>
-        </PromptInputToolbar> */}
       </PromptInput>
 
       {/* Hidden file input */}
@@ -372,6 +602,6 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         onChange={(e) => handleFileAttach(e.target.files)}
         className="hidden"
       />
-    </div>
+    </div >
   )
 }

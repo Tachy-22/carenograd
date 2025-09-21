@@ -31,14 +31,14 @@ export default function AuthPage() {
 
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-between flex-col p-4">
-      <Navigation />
+    <div className="min-h-screen bg-background flex items-center justify-between flex-col p-4 relative overflow-hidden">
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
             <Image
               src="/logo.png"
-              alt="Remotegrad Logo"
+              alt="Carenograd Logo"
               width={60}
               height={60}
               className="rounded-lg"

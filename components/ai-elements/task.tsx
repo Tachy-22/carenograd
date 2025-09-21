@@ -8,6 +8,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
+import MarkdownContent from '@/components/MarkdownContent';
 
 export type TaskItemFileProps = ComponentProps<'div'>;
 
@@ -31,14 +32,18 @@ export type TaskItemProps = ComponentProps<'div'>;
 
 export const TaskItem = ({ children, className, ...props }: TaskItemProps) => (
   <div className={cn('text-muted-foreground text-sm', className)} {...props}>
-    {children}
+    {typeof children === 'string' ? (
+      <MarkdownContent className="inline">{children}</MarkdownContent>
+    ) : (
+      children
+    )}
   </div>
 );
 
 export type TaskProps = ComponentProps<typeof Collapsible>;
 
 export const Task = ({
-  defaultOpen = true,
+  defaultOpen = false,
   className,
   ...props
 }: TaskProps) => (

@@ -1,5 +1,5 @@
-import ChatRedirect from "@/components/ChatRedirect"
+import { redirect } from 'next/navigation'
 
 export default function ChatPage() {
-  return <ChatRedirect />
+  redirect('/')
 }

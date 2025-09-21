@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Authorization": authHeader
-      }
+      },
+      next: { tags: ['conversations'] }
     })
 
     if (!response.ok) {

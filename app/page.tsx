@@ -1,5 +1,10 @@
-import LandingPage from "@/components/LandingPage"
+import ChatArea from "@/components/ChatArea"
 
 export default function Home() {
-  return <LandingPage />
+  return (
+    <ChatArea
+      conversationId={null}
+      initialMessages={[]}
+    />
+  )
 }

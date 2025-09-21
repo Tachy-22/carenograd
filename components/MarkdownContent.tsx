@@ -33,53 +33,53 @@ export default function MarkdownContent({ children, className = '' }: MarkdownCo
 
           // Headers
           h1: ({ children, ...props }) => (
-            <h1 className="text-2xl font-bold mb-4 mt-8 first:mt-0" {...props}>
+            <h1 className="  text-2xl font-bold mb-4 mt-8 first:mt-0" {...props}>
               {children}
             </h1>
           ),
           h2: ({ children, ...props }) => (
-            <h2 className="text-xl font-semibold mb-3 mt-6 first:mt-0" {...props}>
+            <h2 className="  text-xl font-semibold mb-3 mt-6 first:mt-0" {...props}>
               {children}
             </h2>
           ),
           h3: ({ children, ...props }) => (
-            <h3 className="text-lg font-semibold mb-3 mt-8 first:mt-0" {...props}>
+            <h3 className="  text-lg font-semibold mb-3 mt-8 first:mt-0" {...props}>
               {children}
             </h3>
           ),
           h4: ({ children, ...props }) => (
-            <h4 className="text-base font-semibold mb-2 mt-6 first:mt-0" {...props}>
+            <h4 className="  text-base font-semibold mb-2 mt-6 first:mt-0" {...props}>
               {children}
             </h4>
           ),
 
           // Paragraphs
           p: ({ children, ...props }) => (
-            <p className="mb-2 leading-relaxed" {...props}>
+            <p className="  mb-2 leading-relaxed" {...props}>
               {children}
             </p>
           ),
 
           // Lists
           ul: ({ children, ...props }) => (
-            <ul className="list-disc mb-2 space-y-2 ml-8 pl-4 marker:text-gray-500" {...props}>
+            <ul className="  list-disc mb-2 space-y-2 ml-8 pl-4 marker:text-gray-500" {...props}>
               {children}
             </ul>
           ),
           ol: ({ children, ...props }) => (
-            <ol className="list-decimal mb-2 space-y-2 ml-8 pl-4 marker:text-gray-500" {...props}>
+            <ol className="  list-decimal mb-2 space-y-2 ml-8 pl-4 marker:text-gray-500" {...props}>
               {children}
             </ol>
           ),
           li: ({ children, ...props }) => (
-            <li className="leading-relaxed pl-3" {...props}>
+            <li className="  leading-relaxed pl-3" {...props}>
               {children}
             </li>
           ),
 
           // Code blocks
           pre: ({ children, ...props }) => (
-            <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4 overflow-x-auto text-sm" {...props}>
+            <pre className="  bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4 overflow-x-auto text-sm" {...props}>
               {children}
             </pre>
           ),

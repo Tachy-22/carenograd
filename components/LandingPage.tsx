@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import AuthModal from "@/components/AuthModal"
 import { useAuth } from "@/contexts/AuthContext"
+import { TokenUsageProvider } from "@/contexts/TokenUsageContext"
 import Image from "next/image"
 import {
   PromptInput,
@@ -28,7 +29,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/chat")
+      router.push("/")
     }
   }, [isAuthenticated, router])
 
@@ -36,7 +37,7 @@ export default function LandingPage() {
     e.preventDefault()
     if (!message.trim()) return
     if (isAuthenticated) {
-      router.push(`/chat?message=${encodeURIComponent(message)}`)
+      router.push(`/?message=${encodeURIComponent(message)}`)
     } else {
       setShowAuthModal(true)
     }
@@ -44,7 +45,7 @@ export default function LandingPage() {
 
   const handleSuggestionClick = (suggestion: string) => {
     if (isAuthenticated) {
-      router.push(`/chat?message=${encodeURIComponent(suggestion)}`)
+      router.push(`/?message=${encodeURIComponent(suggestion)}`)
     } else {
       setMessage(suggestion)
       setShowAuthModal(true)
@@ -64,89 +65,91 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Bar */}
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              {/* <Image
+    <TokenUsageProvider>
+      <div className="min-h-screen bg-background">
+        {/* Navigation Bar */}
+        <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center gap-3">
+                {/* <Image
+                  src="/logo.png"
+                  alt="Carenograd Logo"
+                  width={32}
+                  height={32}
+                  className="rounded-md"
+                /> */}
+                <h1 className="text-xl font-bold text-foreground">Carenograd</h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" onClick={() => setShowAuthModal(true)}>Login</Button>
+                <Button onClick={() => setShowAuthModal(true)}>Sign Up</Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-4xl min-h-[calc(100vh-4rem)] flex flex-col  justify-center mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-6">
+              <Image
                 src="/logo.png"
-                alt="Remotegrad Logo"
-                width={32}
-                height={32}
-                className="rounded-md"
-              /> */}
-              <h1 className="text-xl font-bold text-foreground">Remotegrad</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => setShowAuthModal(true)}>Login</Button>
-              <Button onClick={() => setShowAuthModal(true)}>Sign Up</Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl min-h-[calc(100vh-4rem)] flex flex-col  justify-center mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/logo.png"
-              alt="Remotegrad Logo"
-              width={80}
-              height={80}
-              className="rounded-lg "
-            />
-          </div>
-          <h2 className="text-4xl font-bold text-foreground mb-4">
-            Your AI Assistant for Graduate School Success
-          </h2>
-          <p className="text-xl text-muted-foreground mb-2">
-            Get personalized guidance, research assistance, and application management
-          </p>
-        </div>
-
-        {/* AI Elements Input */}
-        <div className="max-w-2xl w-full mx-auto mb-12">
-          <PromptInput onSubmit={handleSubmit} className="relative">
-            <PromptInputTextarea
-              placeholder="Ask me about graduate programs..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="min-h-[100px]"
-            />
-            <PromptInputToolbar>
-              <PromptInputSubmit
-                className="absolute right-1 bottom-1"
-                disabled={!message.trim()}
-                status="ready"
+                alt="Carenograd Logo"
+                width={80}
+                height={80}
+                className="rounded-lg "
               />
-            </PromptInputToolbar>
-          </PromptInput>
-        </div>
+            </div>
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Your AI Assistant for Graduate School Success
+            </h2>
+            <p className="text-xl text-muted-foreground mb-2">
+              Get personalized guidance, research assistance, and application management
+            </p>
+          </div>
 
-        {/* Suggestions */}
-        {/* <div className="max-w-4xl mx-auto mb-12">
-          <Suggestions>
-            {gradSchoolSuggestions.map((suggestion, index) => (
-              <Suggestion
-                key={index}
-                suggestion={suggestion}
-                onClick={() => handleSuggestionClick(suggestion)}
+          {/* AI Elements Input */}
+          <div className="max-w-2xl w-full mx-auto mb-12">
+            <PromptInput onSubmit={handleSubmit} className="relative">
+              <PromptInputTextarea
+                placeholder="Ask me about graduate programs..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="min-h-[100px]"
               />
-            ))}
-          </Suggestions>
-        </div> */}
+              <PromptInputToolbar>
+                <PromptInputSubmit
+                  className="absolute right-1 bottom-1"
+                  disabled={!message.trim()}
+                  status="ready"
+                />
+              </PromptInputToolbar>
+            </PromptInput>
+          </div>
+
+          {/* Suggestions */}
+          {/* <div className="max-w-4xl mx-auto mb-12">
+            <Suggestions>
+              {gradSchoolSuggestions.map((suggestion, index) => (
+                <Suggestion
+                  key={index}
+                  suggestion={suggestion}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                />
+              ))}
+            </Suggestions>
+          </div> */}
 
 
-      </main>
+        </main>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
-    </div>
+        {/* Auth Modal */}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+        />
+      </div>
+    </TokenUsageProvider>
   )
 }
