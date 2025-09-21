@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -18,7 +18,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid role specified' }, { status: 400 })
     }
 
-    const response = await fetch(`http://localhost:3000/admin/users/${params.id}/role`, {
+    const resolvedParams = await params
+    const response = await fetch(`http://localhost:3000/admin/users/${resolvedParams.id}/role`, {
       method: 'PUT',
       headers: {
         'Authorization': authHeader,

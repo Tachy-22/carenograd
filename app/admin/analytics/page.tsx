@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -59,7 +59,7 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState("30")
 
-  const fetchMetrics = async (days = "30") => {
+  const fetchMetrics = useCallback(async (days = "30") => {
     try {
       setLoading(true)
       const token = localStorage.getItem('access_token')
@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const generateBehaviorData = () => {
     // TODO: Replace with actual API calls to your analytics backend
