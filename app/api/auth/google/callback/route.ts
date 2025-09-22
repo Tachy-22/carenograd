@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get("code")
     const state = searchParams.get("state")
-    
+
     if (!code) {
       return NextResponse.redirect(new URL("/?error=auth_failed", request.url))
     }
 
     // Forward to backend callback
-    const backendUrl = new URL("http://localhost:3000/auth/google/callback")
+    const backendUrl = new URL(`${API_BASE_URL}/auth/google/callback`)
     backendUrl.searchParams.set("code", code)
     if (state) backendUrl.searchParams.set("state", state)
 
     console.log('Forwarding to backend:', backendUrl.toString())
-    
+
     const response = await fetch(backendUrl.toString(), {
       method: "GET",
       headers: {
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
     })
 
     console.log('Backend response status:', response.status, response)
-    
+
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Backend error:', response.status, errorText)
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
 
-    console.log({data})
+    console.log({ data })
     // Redirect to auth callback page with token and user info
     const redirectUrl = new URL("/auth/google/callback", request.url)
     redirectUrl.searchParams.set("token", data.access_token)

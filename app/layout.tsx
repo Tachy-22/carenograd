@@ -7,6 +7,7 @@ import { AllocationProvider } from "@/contexts/TokenUsageContext"
 import { cookies } from "next/headers"
 import { SidebarProvider } from "@/components/ui/sidebar";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,7 +68,7 @@ export interface DatabaseMessage {
 
 async function fetchConversations(token: string): Promise<Conversation[] | null> {
   try {
-    const response = await fetch("http://localhost:3000/agent/conversations", {
+    const response = await fetch(`${API_BASE_URL}/agent/conversations`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Cache-Control": "no-cache"
@@ -105,7 +106,7 @@ async function fetchConversations(token: string): Promise<Conversation[] | null>
 
 export async function fetchConversationMessages(conversationId: string, token: string): Promise<DatabaseMessage[]> {
   try {
-    const response = await fetch(`http://localhost:3000/agent/conversations/${conversationId}/messages`, {
+    const response = await fetch(`${API_BASE_URL}/agent/conversations/${conversationId}/messages`, {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Cache-Control": "no-cache"

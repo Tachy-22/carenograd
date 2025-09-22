@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
 export async function GET(request: NextRequest) {
   try {
     // Extract the authorization header
@@ -12,9 +14,9 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Proxying warning-level request to backend...')
-    
+
     // Forward the request to the backend
-    const response = await fetch('http://localhost:3000/agent/tokens/warning-level', {
+    const response = await fetch(`${API_BASE_URL}/agent/tokens/warning-level`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,

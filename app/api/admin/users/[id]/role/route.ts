@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export async function PUT(
   request: NextRequest,
@@ -6,7 +7,7 @@ export async function PUT(
 ) {
   try {
     const authHeader = request.headers.get('authorization')
-    
+
     if (!authHeader) {
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
     }
@@ -19,7 +20,7 @@ export async function PUT(
     }
 
     const resolvedParams = await params
-    const response = await fetch(`http://localhost:3000/admin/users/${resolvedParams.id}/role`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${resolvedParams.id}/role`, {
       method: 'PUT',
       headers: {
         'Authorization': authHeader,

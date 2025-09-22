@@ -58,7 +58,7 @@ export default function Navigation() {
               <Button
                 onClick={handleNewChat}
                 variant="ghost"
-                className="justify-start w-4 gap-2 p-0 sm:flex md:hidden"
+                className="justify-start w-4 gap-2 p-0 [display:inline-flex] [@media(min-width:768px)]:hidden"
                 size="sm"
               >
                 <PenBox className="h-4 w-4" />

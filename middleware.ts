@@ -4,7 +4,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 // Routes that require authentication
 const protectedRoutes = ['/chat', '/dashboard', '/profile']

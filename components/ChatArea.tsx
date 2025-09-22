@@ -1,9 +1,8 @@
 "use client"
 
-import { useEffect, useState, Fragment, useRef } from "react"
+import { useEffect, useState, Fragment, useRef, useTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
-import { useAllocation } from "@/contexts/TokenUsageContext"
 import Cookies from "js-cookie"
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -21,12 +20,13 @@ import {
 } from '@/components/ai-elements/prompt-input'
 import { Response } from '@/components/ai-elements/response'
 import { Actions, Action } from '@/components/ai-elements/actions'
-import { Loader } from '@/components/ai-elements/loader'
 import { Task, TaskTrigger, TaskContent, TaskItem } from '@/components/ai-elements/task'
-import { File, X, Copy, Check, Paperclip, CheckCircle } from "lucide-react"
+import { File, X, Copy, Check, Paperclip, CheckCircle, Loader } from "lucide-react"
 import { revalidateData } from "@/lib/revalidate"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 interface ChatAreaProps {
   conversationId?: string | null
@@ -107,8 +107,9 @@ const MessageWithCopy = ({ content, role }: { content: string; role: 'user' | 'a
 
 export default function ChatArea({ conversationId, initialMessages = [] }: ChatAreaProps) {
   const { token, isAuthenticated, isLoading } = useAuth()
-  const { checkCanMakeRequest } = useAllocation()
+  // console.log('Environment:', process.env.NEXT_PUBLIC_NODE_ENV)
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const searchParams = useSearchParams()
   const [input, setInput] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -185,8 +186,11 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         pendingNavigationIdRef.current = null
 
 
-        // Navigate immediately without server revalidation for smooth transition
-        router.push(`/chat/${newConversationId}`)
+        // Prefetch and navigate smoothly without flash
+        router.prefetch(`/chat/${newConversationId}`)
+        startTransition(() => {
+          router.push(`/chat/${newConversationId}`)
+        })
         await revalidateData(`/chat/${newConversationId}`)
 
         console.log('Updated URL to new conversation')
@@ -196,7 +200,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         await revalidateData(`/chat/${conversationId}`)
 
       }
-      await revalidateData(`/chat`)
+      await revalidateData(`/`)
 
     }
   })
@@ -218,18 +222,15 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     setAttachedFile(null)
     setIsWaitingForResponse(true)
 
-    // Check allocation after clearing input
-    const canMakeRequest = await checkCanMakeRequest()
-    if (!canMakeRequest) {
-      alert('Daily request limit exceeded. Please try again later or when fewer users are active.')
-      // Restore input if quota check fails
-      setInput(messageText)
-      setAttachedFile(fileToSend)
-      setIsWaitingForResponse(false)
-      return
-    }
+    // Send message immediately for instant UI feedback
+    if (!fileToSend) {
+      sendMessage({ text: messageText })
+    } else {
+      // For files, show user message immediately with file indicator
+      const immediateMessage = `${messageText.trim() ? messageText + '\n\n' : ''}📎 ${fileToSend.name}`
+      sendMessage({ text: immediateMessage })
 
-    if (fileToSend) {
+      // Then handle file upload in the background
       try {
         // Validate file size (50MB limit)
         const maxSize = 50 * 1024 * 1024 // 50MB
@@ -245,7 +246,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
 
         // Upload file to dedicated endpoint
-        const uploadResponse = await fetch('http://localhost:3000/agent/upload', {
+        const uploadResponse = await fetch(`${API_BASE_URL}/agent/upload`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -260,26 +261,10 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         }
 
         console.log('Upload successful:', uploadResult)
-
-        // Create message with file metadata
-        const fileMetadata = {
-          type: 'file_attachment',
-          fileName: fileToSend.name,
-          fileSize: fileToSend.size,
-          fileType: fileToSend.type,
-          uploadedAt: new Date().toISOString()
-        }
-
-        // Combine user message with file metadata
-        const messageWithFile = `${messageText.trim() ? messageText + '\n\n' : ''}[FILE_ATTACHMENT:${JSON.stringify(fileMetadata)}]`
-
-        sendMessage({ text: messageWithFile })
       } catch (error) {
         console.error('File upload failed:', error)
         return
       }
-    } else {
-      sendMessage({ text: messageText })
     }
   }
 
@@ -363,8 +348,9 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Carenograd
+            {isAuthenticated ? <>Welcome to Carenograd!</> : <>Carenograd</>}
           </h1>
+          {isAuthenticated && <>Your AI assistant for graduate school success</>}
         </div>
 
         <div className="w-full max-w-4xl">
@@ -443,8 +429,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
             <div key={dbMessage.id}>
               <Message from={dbMessage.role}>
                 <MessageContent>
-                  {/* Show tools used from metadata for assistant messages */}
-                  {dbMessage.role === 'assistant' && dbMessage.metadata.toolsUsed && dbMessage.metadata.toolsUsed.length > 0 && (
+                  {/* Show tools used from metadata for assistant messages - only in development */}
+                  {process.env.NEXT_PUBLIC_NODE_ENV !== 'production' && dbMessage.role === 'assistant' && dbMessage.metadata.toolsUsed && dbMessage.metadata.toolsUsed.length > 0 && (
                     <Task>
                       <TaskTrigger title="Tools Used" />
                       <TaskContent className="bg-gray-50/50 border border-gray-300 rounded-lg mt-2 p-2">
@@ -477,8 +463,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
               <Message from={message.role}>
                 <MessageContent>
 
-                  {/* Single unified Task component for both tools and progress - only show during streaming */}
-                  {status === "streaming" && (message.parts?.filter(part => part && part.type === 'tool-ai-tool').length > 0 ||
+                  {/* Single unified Task component for both tools and progress - only show during streaming and in development */}
+                  {process.env.NEXT_PUBLIC_NODE_ENV !== 'production' && status === "streaming" && (message.parts?.filter(part => part && part.type === 'tool-ai-tool').length > 0 ||
                     (message.role === 'assistant' && message.parts?.some(part => part?.type === 'text' && part.text))) && (
                       <Task>
                         <TaskTrigger title="Tasks" />
@@ -526,9 +512,17 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
                               return null
                             })}
                         </TaskContent>
+
                       </Task>
                     )}
+                  {isWaitingForResponse && message.role === 'assistant' && <p className="flex items-center gap-1">
 
+                    <span className="flex gap-1 mt-3">
+                      <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                      <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                      <span className="w-1 h-1 bg-current rounded-full animate-bounce"></span>
+                    </span>
+                  </p>}
                   {/* Then render final response only */}
                   {message.parts
                     ?.filter(part => part && part.type === 'text')
@@ -559,14 +553,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
           ))}
 
 
-          {isWaitingForResponse && <p className="flex items-center gap-1">
 
-            <span className="flex gap-1">
-              <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="w-1 h-1 bg-current rounded-full animate-bounce"></span>
-            </span>
-          </p>}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>

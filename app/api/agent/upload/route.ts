@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
 export async function POST(request: NextRequest) {
   try {
     // Get the authorization header
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
     // Get the FormData from the request
     const formData = await request.formData()
     const file = formData.get('file') as File
-    
+
     if (!file) {
       return NextResponse.json({ message: 'No file provided' }, { status: 400 })
     }
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
     backendFormData.append('file', file)
 
     // Forward request to backend
-    const backendResponse = await fetch('http://localhost:3000/agent/upload', {
+    const backendResponse = await fetch(`${API_BASE_URL}/agent/upload`, {
       method: 'POST',
       headers: {
         'Authorization': authHeader

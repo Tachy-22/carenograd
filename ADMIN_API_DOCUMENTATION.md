@@ -78,6 +78,197 @@ Get user engagement analytics including DAU, retention rates, and activity patte
 #### GET /admin/analytics/content
 Get content creation and usage analytics with trend data.
 
+### AI Token Quota & Allocation Management
+
+#### GET /admin/quota/system-overview
+Get system-wide AI token quota usage and allocation statistics across all models.
+
+**Response:**
+```json
+[
+  {
+    "modelName": "gemini-2.5-flash",
+    "totalRequestsAvailable": 3000,
+    "totalRequestsUsed": 1250,
+    "requestsRemaining": 1750,
+    "systemUsagePercentage": 41.7,
+    "activeUsersCount": 25,
+    "requestsPerUser": 50,
+    "utilizationEfficiency": 83.5
+  }
+]
+```
+
+#### GET /admin/quota/key-pool-stats
+Get detailed statistics about API key pool utilization, rate limits, and system health.
+
+**Response:**
+```json
+{
+  "totalKeys": 15,
+  "availableKeys": 12,
+  "rateLimitedKeys": 2,
+  "exhaustedKeys": 1,
+  "systemHealth": "HEALTHY",
+  "keyUtilization": 78.5,
+  "estimatedRecoveryTime": "2 hours"
+}
+```
+
+#### GET /admin/quota/users
+Get AI token allocation details for all users with pagination.
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10)
+- `model` (optional): Filter by model name (default: 'gemini-2.5-flash')
+
+**Response:**
+```json
+{
+  "allocations": [
+    {
+      "userId": "uuid",
+      "userEmail": "user@example.com",
+      "userName": "John Doe",
+      "modelName": "gemini-2.5-flash",
+      "allocatedRequestsToday": 50,
+      "requestsUsedToday": 32,
+      "requestsRemainingToday": 18,
+      "allocationPercentageUsed": 64.0,
+      "canMakeRequest": true,
+      "warningLevel": "MEDIUM",
+      "lastRequestAt": "2024-01-17T10:30:00Z"
+    }
+  ],
+  "total": 150,
+  "page": 1,
+  "limit": 10,
+  "totalPages": 15,
+  "model": "gemini-2.5-flash"
+}
+```
+
+#### GET /admin/quota/users/:id
+Get detailed AI token quota usage for a specific user.
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "role": "user",
+    "is_active": true
+  },
+  "totalRequests": 850,
+  "requestsToday": 32,
+  "requestsThisWeek": 180,
+  "requestsThisMonth": 750,
+  "mostUsedModel": "gemini-2.5-flash",
+  "avgRequestsPerDay": 25,
+  "lastActivity": "2024-01-17T10:30:00Z",
+  "quotaStatus": "NEAR_LIMIT"
+}
+```
+
+#### GET /admin/quota/usage-trends
+Get AI token usage trends over time for system analysis.
+
+**Query Parameters:**
+- `days` (optional): Number of days to include (default: 30)
+- `model` (optional): Filter by model name
+
+**Response:**
+```json
+{
+  "model": "gemini-2.5-flash",
+  "timeRange": {
+    "days": 30,
+    "startDate": "2023-12-18",
+    "endDate": "2024-01-17"
+  },
+  "trends": [
+    {
+      "date": "2024-01-15",
+      "totalRequests": 450,
+      "uniqueUsers": 25,
+      "averageRequestsPerUser": 18,
+      "systemUtilization": 75,
+      "peakHourUsage": 65
+    }
+  ],
+  "summary": {
+    "totalRequests": 13500,
+    "avgDailyUsers": 22,
+    "peakUsageDay": {
+      "date": "2024-01-10",
+      "totalRequests": 520
+    },
+    "utilizationTrend": "stable"
+  }
+}
+```
+
+#### POST /admin/quota/users/:id/adjust
+Manually adjust a user's daily AI token allocation.
+
+**Request Body:**
+```json
+{
+  "userId": "uuid",
+  "modelName": "gemini-2.5-flash",
+  "dailyAllocation": 75
+}
+```
+
+**Response:**
+```json
+{
+  "message": "User allocation adjustment logged",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "name": "John Doe"
+  },
+  "allocation": {
+    "model": "gemini-2.5-flash",
+    "newDailyLimit": 75,
+    "effectiveDate": "2024-01-17T10:30:00Z"
+  },
+  "warning": "This feature requires a user_allocations table implementation for persistence"
+}
+```
+
+#### GET /admin/quota/alerts
+Get current quota alerts for users approaching or exceeding limits.
+
+**Response:**
+```json
+{
+  "alerts": [
+    {
+      "userId": "uuid",
+      "userEmail": "user@example.com",
+      "userName": "John Doe",
+      "alertLevel": "CRITICAL",
+      "usagePercentage": 98.5,
+      "requestsRemaining": 1,
+      "model": "gemini-2.5-flash",
+      "canMakeRequest": true,
+      "message": "User is very close to daily limit"
+    }
+  ],
+  "summary": {
+    "totalAlerts": 5,
+    "criticalAlerts": 2,
+    "highAlerts": 3,
+    "usersOverLimit": 1
+  }
+}
+```
+
 ### Chart Data Endpoints
 
 #### GET /admin/charts/user-registrations

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export async function POST() {
   try {
@@ -27,16 +27,16 @@ export async function POST() {
 
     if (!refreshResponse.ok) {
       console.error('Backend token refresh failed:', refreshResponse.status)
-      
+
       // If backend refresh fails, clear cookies and return error
       const response = NextResponse.json(
         { error: 'Token refresh failed' },
         { status: 401 }
       )
-      
+
       response.cookies.delete('access_token')
       response.cookies.delete('user')
-      
+
       return response
     }
 
@@ -76,16 +76,16 @@ export async function POST() {
 
   } catch (error) {
     console.error('Token refresh error:', error)
-    
+
     const response = NextResponse.json(
       { error: 'Internal server error during token refresh' },
       { status: 500 }
     )
-    
+
     // Clear cookies on error
     response.cookies.delete('access_token')
     response.cookies.delete('user')
-    
+
     return response
   }
 }

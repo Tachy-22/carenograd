@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isTokenExpiring, setIsTokenExpiring] = useState(false)
 
-  const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'
+  const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL 
 
   // Token refresh constants
   const REFRESH_BUFFER = 5 * 60 * 1000 // 5 minutes before expiration

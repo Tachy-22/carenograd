@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useAuth } from "./AuthContext"
 import Cookies from "js-cookie"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
 interface AllocationData {
   userId: string
   modelName: string
@@ -50,19 +52,19 @@ export function AllocationProvider({ children }: AllocationProviderProps) {
       setIsLoading(false)
       return
     }
-    
+
     try {
       // Get token from cookies first, then fallback to localStorage
       const token = Cookies.get('access_token') || localStorage.getItem('jwt_token') || localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch('http://localhost:3000/allocation/daily', {
+      const response = await fetch(`${API_BASE_URL}/allocation/daily`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         console.log('Allocation data received:', data)
@@ -94,7 +96,7 @@ export function AllocationProvider({ children }: AllocationProviderProps) {
       const token = Cookies.get('access_token') || localStorage.getItem('jwt_token') || localStorage.getItem('access_token')
       if (!token) return false
 
-      const response = await fetch('http://localhost:3000/allocation/can-request', {
+      const response = await fetch(`${API_BASE_URL}/allocation/can-request`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -114,9 +116,9 @@ export function AllocationProvider({ children }: AllocationProviderProps) {
 
   useEffect(() => {
     fetchAllocation()
-    
+
     const interval = setInterval(fetchAllocation, 30000)
-    
+
     return () => clearInterval(interval)
   }, [isAuthenticated])
 

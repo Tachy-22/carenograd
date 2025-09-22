@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 import { cookies } from 'next/headers'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
@@ -21,10 +21,10 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, conversationId } = await request.json()
     console.log({ conversationId })
-    
+
     // Get auth token from header or cookies
     let authToken = request.headers.get("authorization")?.replace('Bearer ', '')
-    
+
     if (!authToken) {
       // Fallback to cookies
       const cookieStore = await cookies()
@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
 
     // Call backend with retry logic for token refresh
     let backendResponse = await makeBackendRequest(authToken, messageData)
-    
+
     // If unauthorized, try to refresh token and retry once
     if (backendResponse.status === 401) {
       console.log('AI chat request unauthorized, attempting token refresh...')
-      
+
       try {
         const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh-jwt-token`, {
           method: 'POST',
@@ -64,13 +64,13 @@ export async function POST(request: NextRequest) {
         if (refreshResponse.ok) {
           const refreshData = await refreshResponse.json()
           const newToken = refreshData.access_token || refreshData.token
-          
+
           if (newToken) {
             console.log('Token refreshed successfully, retrying AI chat request...')
-            
+
             // Retry with new token
             backendResponse = await makeBackendRequest(newToken, messageData)
-            
+
             // Update cookie with new token for future requests
             if (backendResponse.ok) {
               const response = new Response(backendResponse.body, {
@@ -83,11 +83,11 @@ export async function POST(request: NextRequest) {
                   "Access-Control-Allow-Headers": "Content-Type, Authorization",
                 },
               })
-              
+
               // Set new token cookie
               const isProduction = process.env.NODE_ENV === 'production'
               response.headers.set('Set-Cookie', `access_token=${newToken}; HttpOnly; Secure=${isProduction}; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 60 * 60}`)
-              
+
               return response
             }
           }

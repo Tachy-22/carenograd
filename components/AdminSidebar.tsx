@@ -5,7 +5,8 @@ import {
   LayoutDashboard, 
   Users, 
   MessageSquare, 
-  BarChart3
+  BarChart3,
+  Zap
 } from "lucide-react"
 import {
   Sidebar,
@@ -38,6 +39,11 @@ const navigation = [
     name: 'Analytics',
     href: '/admin/analytics',
     icon: BarChart3,
+  },
+  {
+    name: 'Token Quota',
+    href: '/admin/quota',
+    icon: Zap,
   },
 ]
 
