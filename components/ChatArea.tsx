@@ -330,7 +330,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
 
   // Check if we have any messages from AI SDK (single source of truth) or if streaming is active
-  const showCenteredLayout = messages.length == 0 && status !== "streaming" 
+  const showCenteredLayout = messages.length == 0 && status !== "submitted" 
 
   // If no messages, show centered layout
   if (showCenteredLayout) {
@@ -362,7 +362,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
               <PromptInputButton
                 onClick={() => fileInputRef.current?.click()}
-                disabled={status === "submitted"}
+                disabled={status === "streaming"}
                 title="Attach PDF document"
                 variant={"ghost"}
                 className="shadow-none rounded-full"
