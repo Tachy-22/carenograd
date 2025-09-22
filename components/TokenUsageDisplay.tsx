@@ -11,7 +11,7 @@ import {
 export default function TokenUsageDisplay() {
   const { allocation, isLoading } = useAllocation()
 
- 
+
   // const getCircleColor = (warningLevel: string) => {
   //   switch (warningLevel) {
   //     case "CRITICAL": return "bg-red-500"
@@ -35,7 +35,7 @@ export default function TokenUsageDisplay() {
   // Prevent hydration mismatch by not rendering until hydrated
 
 
-  if (isLoading) {
+  if (isLoading || !allocation) {
     return (
       <div className="z-50">
         <div className="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
@@ -43,9 +43,9 @@ export default function TokenUsageDisplay() {
     )
   }
 
-  if (!allocation) {
-    return null
-  }
+  // if (!allocation) {
+  //   return null
+  // }
 
   return (
     <div className="z-50">

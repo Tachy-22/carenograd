@@ -116,10 +116,12 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [hasEverSentMessage, setHasEverSentMessage] = useState(false)
+  const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
 
   const pendingNavigationIdRef = useRef<string | null>(null)
 
-  const { messages, status, sendMessage } = useChat({
+  const { messages, status, sendMessage, } = useChat({
     id: conversationId || undefined,
     messages: initialMessages.map(dbMessage => ({
       id: dbMessage.id,
@@ -156,6 +158,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     onError: (error: Error) => {
       console.error("Chat error:", error)
       setIsWaitingForResponse(false)
+      setOptimisticMessage(null)
       pendingNavigationIdRef.current = null
     },
     onData: (data) => {
@@ -170,6 +173,11 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
       // First data chunk means response has started - always clear waiting state
       setIsWaitingForResponse(false)
+      
+      // Clear optimistic message once streaming starts (real message is now in AI SDK)
+      if (optimisticMessage) {
+        setOptimisticMessage(null)
+      }
 
       // Handle new conversation creation when conversationId is null - store for later navigation
       console.log('onData - conversationId:', conversationId, 'data:', data)
@@ -214,6 +222,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
     }
   })
+  console.log({ status })
+
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -232,6 +242,14 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     setInput("")
     setAttachedFile(null)
     setIsWaitingForResponse(true)
+
+    // Set flag to switch layout immediately
+    setHasEverSentMessage(true)
+
+    // For first message, show optimistic message until AI SDK processes it
+    if (messages.length === 0) {
+      setOptimisticMessage(fileToSend ? `${messageText.trim() ? messageText + '\n\n' : ''}📎 ${fileToSend.name}` : messageText)
+    }
 
     // Send message immediately for instant UI feedback
     if (!fileToSend) {
@@ -277,6 +295,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         return
       }
     }
+
   }
 
 
@@ -325,12 +344,18 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     console.log('ChatArea: conversationId changed to:', conversationId)
   }, [conversationId])
 
+  // Set hasEverSentMessage to true if there are initial messages
+  useEffect(() => {
+    if (initialMessages.length > 0) {
+      setHasEverSentMessage(true)
+    }
+  }, [initialMessages.length])
 
 
 
 
-  // Check if we have any messages from AI SDK (single source of truth) or if streaming is active
-  const showCenteredLayout = messages.length == 0 && status !== "submitted" 
+  // Check if we have any messages or if a message has ever been sent
+  const showCenteredLayout = messages.length === 0 && !hasEverSentMessage
 
   // If no messages, show centered layout
   if (showCenteredLayout) {
@@ -414,6 +439,33 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden justify-between max-w-4xl mx-auto w-full" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
       <Conversation className="h-full pt-4">
         <ConversationContent>
+          {/* Show optimistic first message if present */}
+          {optimisticMessage && (
+            <>
+              <div key="optimistic-message">
+                <Message from="user">
+                  <MessageContent>
+                    <MessageWithCopy content={optimisticMessage} role="user" />
+                  </MessageContent>
+                </Message>
+              </div>
+              {/* Show loading dots for assistant response */}
+              <div key="optimistic-loading">
+                <Message from="assistant">
+                  <MessageContent>
+                    <div className="flex items-center space-x-1 p-2">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                    </div>
+                  </MessageContent>
+                </Message>
+              </div>
+            </>
+          )}
+
           {/* Render all messages from AI SDK */}
           {messages?.filter(message => message && message.id && message.role).map((message) => (
             <div key={message.id}>
