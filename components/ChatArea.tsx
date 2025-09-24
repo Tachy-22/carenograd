@@ -22,7 +22,8 @@ import {
 import { Response } from '@/components/ai-elements/response'
 import { Actions, Action } from '@/components/ai-elements/actions'
 import { Task, TaskTrigger, TaskContent, TaskItem } from '@/components/ai-elements/task'
-import { File, X, Copy, Check, Paperclip, CheckCircle, Loader } from "lucide-react"
+import { File, X, Copy, Check, Paperclip, CheckCircle, Loader, FlaskRound } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { revalidateData } from "@/lib/revalidate"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -416,6 +417,10 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
         <div className="text-center mb-8">
+          <Badge variant="outline" className="mb-4">
+            <FlaskRound className="h-3 w-3 mr-1" />
+            Beta
+          </Badge>
           <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             {isAuthenticated ? <>Welcome to Carenograd!</> : <>Carenograd</>}
           </h1>

@@ -16,7 +16,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext"
 import { useRouter } from "next/navigation"
 import SubscriptionDisplay from "@/components/SubscriptionDisplay"
 import ManageSubscriptionModal from "@/components/ManageSubscriptionModal"
-import { PenBox, ChevronDown, Zap, Crown, Settings, LogOut } from "lucide-react"
+import { PenBox, ChevronDown, Zap, Crown, Settings, LogOut, FlaskRound } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 import Image from "next/image"
@@ -63,7 +63,10 @@ export default function Navigation() {
               <div className="flex items-center gap-3">
                 <Crown className="h-4 w-4" />
                 <span className="text-xl font-semibold">Carenograd Pro</span>
-
+                <Badge variant="outline" className="mb-4">
+                  <FlaskRound className="h-3 w-3 mr-1" />
+                  Beta
+                </Badge>
               </div>
             ) : (
               <DropdownMenu>
@@ -71,6 +74,10 @@ export default function Navigation() {
                   <Button variant="ghost" className="flex items-center gap-2 text-xl font-semibold p-2">
                     <Zap className="h-5 w-5 text-gray-600" />
                     Carenograd
+                    <Badge variant="outline" className="mb-4">
+                      <FlaskRound className="h-3 w-3 mr-1" />
+                      Beta
+                    </Badge>
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
