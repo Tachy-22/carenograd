@@ -63,7 +63,7 @@ export default function Navigation() {
               <div className="flex items-center gap-3">
                 <Crown className="h-4 w-4" />
                 <span className="text-xl font-semibold">Carenograd Pro</span>
-                <Badge variant="outline" className="">
+                <Badge variant="outline" className=" bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
                   <FlaskRound className="h-3 w-3 mr-1" />
                   Beta
                 </Badge>
