@@ -417,7 +417,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
         <div className="text-center mb-8">
-          <Badge variant="outline" className="mb-4">
+          <Badge variant="outline" className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
             <FlaskRound className="h-3 w-3 mr-1" />
             Beta
           </Badge>
