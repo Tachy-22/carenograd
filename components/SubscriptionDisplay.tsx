@@ -120,9 +120,9 @@ export default function SubscriptionDisplay() {
             )}
 
             {/* Upgrade prompt for free users */}
-            {quotaStatus.tier_name === 'free' && (
-              <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
-                <div className="text-xs text-blue-800 font-medium mb-2">
+            {/* {quotaStatus.tier_name === 'free' && (
+              <div className="mt-3 p-3 border rounded-lg">
+                <div className="text-xs  font-medium mb-2">
                   🚀 Upgrade to Pro
                 </div>
                 <div className="text-xs text-blue-700 mb-2">
@@ -136,7 +136,7 @@ export default function SubscriptionDisplay() {
                   Upgrade Now
                 </Button>
               </div>
-            )}
+            )} */}
 
             {/* Low messages warning */}
             {shouldShowUpgradePrompt && (
