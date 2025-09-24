@@ -118,7 +118,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
   const [input, setInput] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [, setIsWaitingForResponse] = useState(false)
   const [hasEverSentMessage, setHasEverSentMessage] = useState(false)
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
 

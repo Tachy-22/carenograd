@@ -45,7 +45,7 @@ function CallbackContent() {
         
         // Check if this might be the initial OAuth redirect from Google
         const code = searchParams.get('code')
-        const state = searchParams.get('state')
+        searchParams.get('state')
        // console.log('State:', state)
         
         if (code) {

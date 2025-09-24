@@ -195,7 +195,7 @@ export default function QuotaMonitoringPage() {
       //   data: data
       // })
       setUserAllocations(data)
-    } catch (err) {
+    } catch {
       //console.error('❌ Error fetching user allocations:', err)
       setUserAllocations({ allocations: [], total: 0, page: 1, totalPages: 1 })
     }
@@ -242,7 +242,7 @@ export default function QuotaMonitoringPage() {
       //   data: data
       // })
       setAlerts(data)
-    } catch (err) {
+    } catch {
      // console.error('❌ Error fetching alerts:', err)
       setAlerts({ alerts: [], summary: { totalAlerts: 0, criticalAlerts: 0, highAlerts: 0, usersOverLimit: 0 } })
     }
@@ -271,7 +271,7 @@ export default function QuotaMonitoringPage() {
       })
       if (!response.ok) throw new Error('Failed to adjust allocation')
       
-      const result = await response.json()
+      await response.json()
      // console.log('✅ Allocation adjustment successful:', result)
       
       // Refresh user allocations

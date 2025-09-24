@@ -13,7 +13,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -141,7 +140,7 @@ export default function ManageSubscriptionModal({ isOpen, onOpenChange }: Manage
             </div>
             <p className="text-sm text-muted-foreground">
               Cancelling will downgrade you to the Free plan at the end of your current billing period.
-              You'll lose access to Pro features and your daily message limit will be reduced to 20 messages.
+              You&apos;ll lose access to Pro features and your daily message limit will be reduced to 20 messages.
             </p>
 
             <AlertDialog>
@@ -153,7 +152,7 @@ export default function ManageSubscriptionModal({ isOpen, onOpenChange }: Manage
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will cancel your Pro subscription and you'll be downgraded to the Free plan
+                    This will cancel your Pro subscription and you&apos;ll be downgraded to the Free plan
                     at the end of your current billing period ({new Date(currentSubscription.current_period_end).toLocaleDateString()}).
 
                     <br /><br />

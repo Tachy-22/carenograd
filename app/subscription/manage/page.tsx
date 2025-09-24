@@ -73,7 +73,7 @@ export default function ManageSubscriptionPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              You're on the Free Plan
+              You&apos;re on the Free Plan
             </h1>
 
             <p className="text-gray-600 mb-8">
@@ -239,7 +239,7 @@ export default function ManageSubscriptionPage() {
               <CardContent>
                 <p className="text-red-700 mb-4">
                   Cancelling your subscription will downgrade you to the Free plan at the end of your current billing period.
-                  You'll lose access to Pro features and your daily message limit will be reduced to 20 messages.
+                  You&apos;ll lose access to Pro features and your daily message limit will be reduced to 20 messages.
                 </p>
 
                 <AlertDialog>
@@ -251,7 +251,7 @@ export default function ManageSubscriptionPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will cancel your Pro subscription and you'll be downgraded to the Free plan
+                        This will cancel your Pro subscription and you&apos;ll be downgraded to the Free plan
                         at the end of your current billing period ({new Date(currentSubscription.current_period_end).toLocaleDateString()}).
 
                         <br /><br />
