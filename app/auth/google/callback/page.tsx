@@ -19,19 +19,19 @@ function CallbackContent() {
     hasProcessedRef.current = true
     setIsProcessing(true)
     
-    console.log('🚀 Starting auth callback processing...')
+   //// console.log('🚀 Starting auth callback processing...')
     
     try {
       const token = searchParams.get('token')
       const userParam = searchParams.get('user')
       const error = searchParams.get('error')
       
-      console.log('📊 Final params check:', { 
-        hasToken: !!token, 
-        hasUser: !!userParam, 
-        hasError: !!error,
-        allParams: Object.fromEntries(searchParams.entries())
-      })
+      //// console.log('📊 Final params check:', { 
+      //   hasToken: !!token, 
+      //   hasUser: !!userParam, 
+      //   hasError: !!error,
+      //   allParams: Object.fromEntries(searchParams.entries())
+      // })
 
       if (error) {
         console.error('❌ OAuth error detected:', error)
@@ -46,16 +46,16 @@ function CallbackContent() {
         // Check if this might be the initial OAuth redirect from Google
         const code = searchParams.get('code')
         const state = searchParams.get('state')
-        console.log('State:', state)
+       // console.log('State:', state)
         
         if (code) {
-          console.log('🔄 Found OAuth code, this seems to be Google callback, not our callback')
-          console.log('Code:', code.substring(0, 20) + '...')
+         // console.log('🔄 Found OAuth code, this seems to be Google callback, not our callback')
+         // console.log('Code:', code.substring(0, 20) + '...')
           // Let the middleware handle this
           return
         }
         
-        console.log('🔙 No auth data found, redirecting to auth page')
+       // console.log('🔙 No auth data found, redirecting to auth page')
         router.push('/auth?error=no_callback_data')
         return
       }
@@ -73,11 +73,11 @@ function CallbackContent() {
       }
 
       // Parse user data
-      console.log('📝 Parsing user data...')
+     // console.log('📝 Parsing user data...')
       let userData
       try {
         userData = JSON.parse(decodeURIComponent(userParam))
-        console.log('✅ User data parsed successfully:', userData)
+       // console.log('✅ User data parsed successfully:', userData)
       } catch (parseError) {
         console.error('❌ Failed to parse user data:', parseError)
         console.error('Raw userParam:', userParam)
@@ -113,21 +113,21 @@ function CallbackContent() {
         if (!cookieResponse.ok) {
           console.warn('⚠️ Failed to set server cookies:', cookieResponse.status)
         } else {
-          console.log('✅ Server cookies set successfully')
+         // console.log('✅ Server cookies set successfully')
         }
       } catch (cookieError) {
         console.warn('⚠️ Cookie API error:', cookieError)
       }
       
       // Login with auth context
-      console.log('🔐 Calling login function...')
+     // console.log('🔐 Calling login function...')
       await login(token, userData)
-      console.log('✅ Login completed successfully')
+     // console.log('✅ Login completed successfully')
 
       // Clear URL parameters
       try {
         window.history.replaceState({}, '', window.location.pathname)
-        console.log('🧹 URL parameters cleared')
+       // console.log('🧹 URL parameters cleared')
       } catch (historyError) {
         console.warn('⚠️ Could not clear URL parameters:', historyError)
       }
@@ -136,7 +136,7 @@ function CallbackContent() {
       const redirectTo = sessionStorage.getItem('auth_redirect') || '/chat'
       sessionStorage.removeItem('auth_redirect')
       
-      console.log('🎯 Redirecting to:', redirectTo)
+     // console.log('🎯 Redirecting to:', redirectTo)
       
       setTimeout(() => {
         router.push(redirectTo)
@@ -170,12 +170,12 @@ function CallbackContent() {
       timestamp: new Date().toISOString()
     }
     
-    console.log('🔍 CALLBACK DEBUG INFO:', debug)
+   // console.log('🔍 CALLBACK DEBUG INFO:', debug)
     setDebugInfo(debug)
     
     // Prevent multiple runs
     if (hasProcessedRef.current || isProcessing) {
-      console.log('⚠️ Skipping callback processing - already processed or processing')
+     // console.log('⚠️ Skipping callback processing - already processed or processing')
       return
     }
 
@@ -211,8 +211,8 @@ function CallbackContent() {
   // }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="text-center space-y-4">
+    <div className="flex items-center justify-center min-h-screen bg-background min-w-screen">
+      <div className="text-center space-y-4 mx-auto">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
         <h2 className="text-xl font-semibold">Completing authentication...</h2>
         <p className="text-muted-foreground">Please wait while we sign you in.</p>

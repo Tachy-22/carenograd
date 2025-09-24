@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Extract the authorization header
     const authHeader = request.headers.get('authorization')
@@ -13,18 +13,20 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('Proxying warning-level request to backend...')
+    const body = await request.json()
+   // console.log('Subscribing to tier:', body)
 
     // Forward the request to the backend
-    const response = await fetch(`${API_BASE_URL}/agent/tokens/warning-level`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/subscription/subscribe`, {
+      method: 'POST',
       headers: {
         'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify(body)
     })
 
-    console.log('Backend response status:', response.status)
+   // console.log('Backend response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -36,13 +38,13 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    console.log('Warning level data from backend:', data)
+   // console.log('Subscription result from backend:', data)
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching warning level:', error)
+    console.error('Error subscribing:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch warning level' },
+      { error: 'Failed to subscribe' },
       { status: 500 }
     )
   }

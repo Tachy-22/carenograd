@@ -90,7 +90,7 @@ export default function AdminDashboard() {
         const statsData = await statsResponse.json()
         const chartsData = await chartsResponse.json()
         
-        console.log('DEBUG Dashboard - Full charts data:', chartsData)
+       // console.log('DEBUG Dashboard - Full charts data:', chartsData)
         
         setStats(statsData)
         
@@ -98,8 +98,8 @@ export default function AdminDashboard() {
         const conversationsSliced = chartsData.charts.conversations.slice(-14)
         const messagesSliced = chartsData.charts.messages.slice(-14)
         
-        console.log('DEBUG Dashboard - conversations:', conversationsSliced)
-        console.log('DEBUG Dashboard - messages:', messagesSliced)
+       // console.log('DEBUG Dashboard - conversations:', conversationsSliced)
+      // console.log('DEBUG Dashboard - messages:', messagesSliced)
         
         const conversationGrowth = conversationsSliced.map((item: { date: string; count: number }) => {
           // Find matching message data by date
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
             conversations: item.count,
             messages: matchingMessage?.count || 0
           }
-          console.log('DEBUG Dashboard combined item:', result)
+        //  console.log('DEBUG Dashboard combined item:', result)
           return result
         })
         

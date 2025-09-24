@@ -145,14 +145,14 @@ export default function QuotaMonitoringPage() {
 
   const fetchSystemOverview = useCallback(async () => {
     try {
-      console.log('🔄 Fetching system overview...')
+    //  console.log('🔄 Fetching system overview...')
       const token = localStorage.getItem('access_token')
       const response = await fetch('/api/admin/quota/system-overview', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok) throw new Error('Failed to fetch system overview')
       const data = await response.json()
-      console.log('📊 System Overview Data:', data)
+     // console.log('📊 System Overview Data:', data)
       setSystemOverview(data)
     } catch (err) {
       console.error('❌ Error fetching system overview:', err)
@@ -162,14 +162,14 @@ export default function QuotaMonitoringPage() {
 
   const fetchKeyPoolStats = useCallback(async () => {
     try {
-      console.log('🔄 Fetching key pool stats...')
+     // console.log('🔄 Fetching key pool stats...')
       const token = localStorage.getItem('access_token')
       const response = await fetch('/api/admin/quota/key-pool-stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok) throw new Error('Failed to fetch key pool stats')
       const data = await response.json()
-      console.log('🔑 Key Pool Stats Data:', data)
+    //  console.log('🔑 Key Pool Stats Data:', data)
       setKeyPoolStats(data)
     } catch (err) {
       console.error('❌ Error fetching key pool stats:', err)
@@ -179,44 +179,44 @@ export default function QuotaMonitoringPage() {
 
   const fetchUserAllocations = useCallback(async (page = 1, model = selectedModel) => {
     try {
-      console.log(`🔄 Fetching user allocations (page ${page}, model: ${model})...`)
+   //   console.log(`🔄 Fetching user allocations (page ${page}, model: ${model})...`)
       const token = localStorage.getItem('access_token')
       const response = await fetch(`/api/admin/quota/users?page=${page}&limit=${allocationsLimit}&model=${model}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok) throw new Error('Failed to fetch user allocations')
       const data = await response.json()
-      console.log('👥 User Allocations Data:', {
-        totalUsers: data.total,
-        currentPage: data.page,
-        totalPages: data.totalPages,
-        allocationsCount: data.allocations?.length || 0,
-        model: model,
-        data: data
-      })
+      // console.log('👥 User Allocations Data:', {
+      //   totalUsers: data.total,
+      //   currentPage: data.page,
+      //   totalPages: data.totalPages,
+      //   allocationsCount: data.allocations?.length || 0,
+      //   model: model,
+      //   data: data
+      // })
       setUserAllocations(data)
     } catch (err) {
-      console.error('❌ Error fetching user allocations:', err)
+      //console.error('❌ Error fetching user allocations:', err)
       setUserAllocations({ allocations: [], total: 0, page: 1, totalPages: 1 })
     }
   }, [selectedModel, allocationsLimit])
 
   const fetchUsageTrends = useCallback(async (days = trendsTimeRange, model = selectedModel) => {
     try {
-      console.log(`🔄 Fetching usage trends (${days} days, model: ${model})...`)
+    //  console.log(`🔄 Fetching usage trends (${days} days, model: ${model})...`)
       const token = localStorage.getItem('access_token')
       const response = await fetch(`/api/admin/quota/usage-trends?days=${days}&model=${model}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok) throw new Error('Failed to fetch usage trends')
       const data = await response.json()
-      console.log('📈 Usage Trends Data:', {
-        model: data.model,
-        timeRange: data.timeRange,
-        trendsCount: data.trends?.length || 0,
-        summary: data.summary,
-        data: data
-      })
+      // console.log('📈 Usage Trends Data:', {
+      //   model: data.model,
+      //   timeRange: data.timeRange,
+      //   trendsCount: data.trends?.length || 0,
+      //   summary: data.summary,
+      //   data: data
+      // })
       setUsageTrends(data)
     } catch (err) {
       console.error('❌ Error fetching usage trends:', err)
@@ -226,36 +226,36 @@ export default function QuotaMonitoringPage() {
 
   const fetchAlerts = useCallback(async () => {
     try {
-      console.log('🔄 Fetching quota alerts...')
+     // console.log('🔄 Fetching quota alerts...')
       const token = localStorage.getItem('access_token')
       const response = await fetch('/api/admin/quota/alerts', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!response.ok) throw new Error('Failed to fetch alerts')
       const data = await response.json()
-      console.log('🚨 Quota Alerts Data:', {
-        alertsCount: data.alerts?.length || 0,
-        summary: data.summary,
-        criticalAlerts: data.summary?.criticalAlerts || 0,
-        highAlerts: data.summary?.highAlerts || 0,
-        usersOverLimit: data.summary?.usersOverLimit || 0,
-        data: data
-      })
+      // console.log('🚨 Quota Alerts Data:', {
+      //   alertsCount: data.alerts?.length || 0,
+      //   summary: data.summary,
+      //   criticalAlerts: data.summary?.criticalAlerts || 0,
+      //   highAlerts: data.summary?.highAlerts || 0,
+      //   usersOverLimit: data.summary?.usersOverLimit || 0,
+      //   data: data
+      // })
       setAlerts(data)
     } catch (err) {
-      console.error('❌ Error fetching alerts:', err)
+     // console.error('❌ Error fetching alerts:', err)
       setAlerts({ alerts: [], summary: { totalAlerts: 0, criticalAlerts: 0, highAlerts: 0, usersOverLimit: 0 } })
     }
   }, [])
 
   const adjustUserAllocation = async (userId: string, modelName: string, dailyAllocation: number) => {
     try {
-      console.log(`🔄 Adjusting allocation for user ${userId}:`, {
-        userId,
-        modelName,
-        dailyAllocation,
-        previousAllocation: adjustingUser?.allocatedRequestsToday
-      })
+      // console.log(`🔄 Adjusting allocation for user ${userId}:`, {
+      //   userId,
+      //   modelName,
+      //   dailyAllocation,
+      //   previousAllocation: adjustingUser?.allocatedRequestsToday
+      // })
       const token = localStorage.getItem('access_token')
       const response = await fetch(`/api/admin/quota/users/${userId}/adjust`, {
         method: 'POST',
@@ -272,14 +272,14 @@ export default function QuotaMonitoringPage() {
       if (!response.ok) throw new Error('Failed to adjust allocation')
       
       const result = await response.json()
-      console.log('✅ Allocation adjustment successful:', result)
+     // console.log('✅ Allocation adjustment successful:', result)
       
       // Refresh user allocations
       await fetchUserAllocations(allocationsPage, selectedModel)
       setAdjustingUser(null)
       setNewAllocation("")
     } catch (err) {
-      console.error('❌ Error adjusting allocation:', err)
+     // console.error('❌ Error adjusting allocation:', err)
       setError(err instanceof Error ? err.message : 'Failed to adjust allocation')
       setAdjustingUser(null)
       setNewAllocation("")
@@ -287,11 +287,11 @@ export default function QuotaMonitoringPage() {
   }
 
   const refreshAllData = useCallback(async () => {
-    console.log('🔄 Refreshing all quota data...')
+   // console.log('🔄 Refreshing all quota data...')
     setLoading(true)
     setError(null)
     try {
-      console.log('⏱️ Starting parallel data fetch...')
+    //  console.log('⏱️ Starting parallel data fetch...')
       await Promise.all([
         fetchSystemOverview(),
         fetchKeyPoolStats(),
@@ -299,7 +299,7 @@ export default function QuotaMonitoringPage() {
         fetchUsageTrends(trendsTimeRange, selectedModel),
         fetchAlerts()
       ])
-      console.log('✅ All quota data refreshed successfully')
+    //  console.log('✅ All quota data refreshed successfully')
     } catch (err) {
       console.error('❌ Failed to refresh quota data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -309,17 +309,17 @@ export default function QuotaMonitoringPage() {
   }, [fetchSystemOverview, fetchKeyPoolStats, fetchUserAllocations, fetchUsageTrends, fetchAlerts, allocationsPage, selectedModel, trendsTimeRange])
 
   useEffect(() => {
-    console.log('🚀 Quota monitoring dashboard mounted, loading initial data...')
+   // console.log('🚀 Quota monitoring dashboard mounted, loading initial data...')
     refreshAllData()
   }, [refreshAllData])
 
   useEffect(() => {
-    console.log(`📊 User allocations filter changed (page: ${allocationsPage}, model: ${selectedModel})`)
+    //console.log(`📊 User allocations filter changed (page: ${allocationsPage}, model: ${selectedModel})`)
     fetchUserAllocations(allocationsPage, selectedModel)
   }, [fetchUserAllocations, allocationsPage, selectedModel])
 
   useEffect(() => {
-    console.log(`📈 Usage trends filter changed (days: ${trendsTimeRange}, model: ${selectedModel})`)
+  //  console.log(`📈 Usage trends filter changed (days: ${trendsTimeRange}, model: ${selectedModel})`)
     fetchUsageTrends(trendsTimeRange, selectedModel)
   }, [fetchUsageTrends, trendsTimeRange, selectedModel])
 

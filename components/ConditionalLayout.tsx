@@ -12,8 +12,8 @@ interface ConditionalLayoutProps {
 export default function ConditionalLayout({ children, initialConversations }: ConditionalLayoutProps) {
   const pathname = usePathname()
   
-  // Don't apply AppLayout to admin routes
-  if (pathname.startsWith('/admin')) {
+  // Don't apply AppLayout to admin and auth routes
+  if (pathname.startsWith('/admin') || pathname.startsWith('/auth')|| pathname.startsWith('/subscription')) {
     return <>{children}</>
   }
   

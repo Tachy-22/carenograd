@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -11,14 +12,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
+import { useSubscription } from "@/contexts/SubscriptionContext"
 import { useRouter } from "next/navigation"
-import TokenUsageDisplay from "@/components/TokenUsageDisplay"
-import { PenBox } from "lucide-react"
+import SubscriptionDisplay from "@/components/SubscriptionDisplay"
+import ManageSubscriptionModal from "@/components/ManageSubscriptionModal"
+import { PenBox, ChevronDown, Zap, Crown, Settings, LogOut } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+
 import Image from "next/image"
 
 export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth()
+  const { currentSubscription } = useSubscription()
   const router = useRouter()
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -34,13 +41,67 @@ export default function Navigation() {
     router.push(`/`)
   }
 
+  const getCurrentTier = () => {
+    return currentSubscription?.tier_name || 'free'
+  }
+
+  const handleUpgrade = () => {
+    router.push('/subscription')
+  }
+
+  const handleManageSubscription = () => {
+    setIsManageModalOpen(true)
+  }
+
   return (
     <header className=" sticky-0 w-full top-0 right-0  bg-bakground shadow-xs">
       <div className="flex justify-between items-center h-[3.5rem] px-4 ">
         <div className="flex items-center space-x-4">
           {isAuthenticated && <SidebarTrigger className="md:hidden" />}
           {isAuthenticated ? (
-            <h1 className="text-xl font-semibold">Carenograd</h1>
+            getCurrentTier() === 'pro' ? (
+              <div className="flex items-center gap-3">
+                <Crown className="h-4 w-4" />
+                <span className="text-xl font-semibold">Carenograd Pro</span>
+
+              </div>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 text-xl font-semibold p-2">
+                    <Zap className="h-5 w-5 text-gray-600" />
+                    Carenograd
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64">
+                  <DropdownMenuItem
+                    className="flex items-center justify-between p-3 bg-muted"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Zap className="h-4 w-4 text-gray-600" />
+                      <span>Carenograd</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      Current
+                    </Badge>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={handleUpgrade}
+                    className="flex items-center justify-between p-3 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Crown className="h-4 w-4" />
+                      <span>Carenograd Pro</span>
+                    </div>
+                    <Badge className="text-xs bg-blue-600 text-white">
+                      Upgrade
+                    </Badge>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )
           ) : (
             <Image
               src="/logo.png"
@@ -63,7 +124,7 @@ export default function Navigation() {
               >
                 <PenBox className="h-4 w-4" />
               </Button>
-              <TokenUsageDisplay />
+              <SubscriptionDisplay />
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -89,12 +150,27 @@ export default function Navigation() {
                       Connected Accounts
                     </DropdownMenuItem> */}
                     <DropdownMenuSeparator />
+
+                    {/* Only show manage subscription for Pro users */}
+                    {getCurrentTier() === 'pro' && (
+                      <DropdownMenuItem onClick={handleManageSubscription}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Manage Subscription
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
+
+              <ManageSubscriptionModal
+                isOpen={isManageModalOpen}
+                onOpenChange={setIsManageModalOpen}
+              />
             </>
           ) : (
             <div className="flex items-center space-x-2">

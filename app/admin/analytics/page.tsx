@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
       }
 
       const data = await response.json()
-      console.log('DEBUG Full API response:', data)
+    //  console.log('DEBUG Full API response:', data)
       
       setMetrics(data)
       generateBehaviorData()
@@ -265,8 +265,8 @@ export default function AnalyticsPage() {
                       const conversationsData = metrics.charts.conversations.slice(-14)
                       const messagesData = metrics.charts.messages.slice(-14)
                       
-                      console.log('DEBUG conversations data:', conversationsData)
-                      console.log('DEBUG messages data:', messagesData)
+                    //  console.log('DEBUG conversations data:', conversationsData)
+                      // console.log('DEBUG messages data:', messagesData)
                       
                       // Create a proper date-based mapping
                       const combinedData = conversationsData.map((convItem) => {
@@ -277,7 +277,7 @@ export default function AnalyticsPage() {
                           conversations: convItem.count,
                           messages: matchingMessage?.count || 0
                         }
-                        console.log('DEBUG combined item:', result)
+                     //   console.log('DEBUG combined item:', result)
                         return result
                       })
                       

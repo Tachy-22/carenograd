@@ -67,7 +67,7 @@ export function AllocationProvider({ children }: AllocationProviderProps) {
 
       if (response.ok) {
         const data = await response.json()
-        console.log('Allocation data received:', data)
+       // console.log('Allocation data received:', data)
         setAllocation(data)
       } else {
         console.error('Failed to fetch allocation:', response.status, response.statusText)

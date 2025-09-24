@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     backendUrl.searchParams.set("code", code)
     if (state) backendUrl.searchParams.set("state", state)
 
-    console.log('Forwarding to backend:', backendUrl.toString())
+   // console.log('Forwarding to backend:', backendUrl.toString())
 
     const response = await fetch(backendUrl.toString(), {
       method: "GET",
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    console.log('Backend response status:', response.status, response)
+   // console.log('Backend response status:', response.status, response)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
 
-    console.log({ data })
+   // console.log({ data })
     // Redirect to auth callback page with token and user info
     const redirectUrl = new URL("/auth/google/callback", request.url)
     redirectUrl.searchParams.set("token", data.access_token)

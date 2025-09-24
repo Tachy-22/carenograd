@@ -48,7 +48,7 @@ export default function ChatSidebar({ conversations }: ChatSidebarProps) {
 
   const currentConversationId = pathname.split('/').pop()
 
-  console.log({ conversations })
+ // console.log({ conversations })
   const filteredConversations = conversations && conversations?.filter(conv =>
     conv.title.toLowerCase().includes(searchQuery.toLowerCase())
   )

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ConditionalLayout from "@/components/ConditionalLayout"
-import { AllocationProvider } from "@/contexts/TokenUsageContext"
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext"
 import { cookies } from "next/headers"
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -78,7 +78,7 @@ async function fetchConversations(token: string): Promise<Conversation[] | null>
     if (response.ok) {
       const { conversations } = await response.json()
 
-      console.log('DEBUG: Backend returned conversations:', conversations)
+     // console.log('DEBUG: Backend returned conversations:', conversations)
 
       if (!conversations || conversations.length === 0) {
         return null
@@ -137,13 +137,13 @@ export default async function RootLayout({
   // Fetch conversations server-side
   const initialConversations = token ? await fetchConversations(token) : null
 
-  console.log('Server-side conversations fetch:', {
-    hasToken: !!token,
-    conversationCount: initialConversations && initialConversations.length
-  })
+  // console.log('Server-side conversations fetch:', {
+  //   hasToken: !!token,
+  //   conversationCount: initialConversations && initialConversations.length
+  // })
   const conversations = initialConversations && initialConversations.length > 0 ? initialConversations : null
-  console.log('DEBUG: Before passing to AppLayout - conversations:', conversations)
-  console.log('DEBUG: Before passing to AppLayout - initialConversations:', initialConversations)
+ // console.log('DEBUG: Before passing to AppLayout - conversations:', conversations)
+  //console.log('DEBUG: Before passing to AppLayout - initialConversations:', initialConversations)
 
   return (
     <html lang="en">
@@ -151,13 +151,13 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <AllocationProvider>
+          <SubscriptionProvider>
             <SidebarProvider defaultOpen={true}>
               <ConditionalLayout initialConversations={conversations}>
                 {children}
               </ConditionalLayout>
             </SidebarProvider >
-          </AllocationProvider>
+          </SubscriptionProvider>
         </AuthProvider>
       </body>
     </html>

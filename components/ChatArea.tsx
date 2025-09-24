@@ -3,6 +3,7 @@
 import { useEffect, useState, Fragment, useRef, useTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
+import { useSubscription } from "@/contexts/SubscriptionContext"
 import Cookies from "js-cookie"
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
 
 interface ChatAreaProps {
   conversationId?: string | null
@@ -108,9 +110,10 @@ const MessageWithCopy = ({ content, role }: { content: string; role: 'user' | 'a
 
 export default function ChatArea({ conversationId, initialMessages = [] }: ChatAreaProps) {
   const { token, isAuthenticated, isLoading } = useAuth()
-  // console.log('Environment:', process.env.NEXT_PUBLIC_NODE_ENV)
+  const { quotaStatus, checkCanSendMessage, updateQuotaAfterMessage } = useSubscription()
+  //// console.log('Environment:', process.env.NEXT_PUBLIC_NODE_ENV)
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const searchParams = useSearchParams()
   const [input, setInput] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -162,8 +165,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       pendingNavigationIdRef.current = null
     },
     onData: (data) => {
-      console.log('Received data part from server:', data)
-      console.log('Current isWaitingForResponse:', isWaitingForResponse)
+     // console.log('Received data part from server:', data)
+     // console.log('Current isWaitingForResponse:', isWaitingForResponse)
 
       // Validate streaming data structure before processing
       if (!data || typeof data !== 'object') {
@@ -180,26 +183,27 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       }
 
       // Handle new conversation creation when conversationId is null - store for later navigation
-      console.log('onData - conversationId:', conversationId, 'data:', data)
+     // console.log('onData - conversationId:', conversationId, 'data:', data)
       if (conversationId === null) {
         if ('type' in data && data.type === 'data-conversation' && 'data' in data && data.data && typeof data.data === 'object' && 'conversationId' in data.data) {
           const newConversationId = data.data.conversationId as string
-          console.log('New conversation created, will navigate after streaming completes:', newConversationId)
-          console.log('Setting pendingNavigationId to:', newConversationId)
+         // console.log('New conversation created, will navigate after streaming completes:', newConversationId)
+         // console.log('Setting pendingNavigationId to:', newConversationId)
           pendingNavigationIdRef.current = newConversationId
         }
       }
     },
     onFinish: async () => {
-      console.log('AI response completed - dispatching token usage update event')
-      console.log('onFinish - pendingNavigationId:', pendingNavigationIdRef.current)
-      console.log('onFinish - conversationId:', conversationId)
+     // console.log('AI response completed - updating quota')
+     // console.log('onFinish - pendingNavigationId:', pendingNavigationIdRef.current)
+     // console.log('onFinish - conversationId:', conversationId)
       setIsWaitingForResponse(false)
+      updateQuotaAfterMessage()
       window.dispatchEvent(new CustomEvent('ai-response-complete'))
 
       // Navigate to new conversation if one was created during streaming
       if (pendingNavigationIdRef.current) {
-        console.log('Streaming complete, navigating to:', pendingNavigationIdRef.current)
+       // console.log('Streaming complete, navigating to:', pendingNavigationIdRef.current)
         const newConversationId = pendingNavigationIdRef.current
         pendingNavigationIdRef.current = null
 
@@ -211,10 +215,10 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         })
         await revalidateData(`/chat/${newConversationId}`)
 
-        console.log('Updated URL to new conversation')
+       // console.log('Updated URL to new conversation')
       } else if (conversationId && conversationId !== 'null') {
         // For existing conversations, revalidate the current conversation messages
-        console.log('Revalidating current conversation messages:', conversationId)
+       // console.log('Revalidating current conversation messages:', conversationId)
         await revalidateData(`/chat/${conversationId}`)
 
       }
@@ -222,7 +226,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
     }
   })
-  console.log({ status })
+ // console.log({ status })
 
 
 
@@ -233,6 +237,27 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     // Don't allow submission if auth is still loading or user is not authenticated
     if (isLoading || !isAuthenticated || !token) {
       console.warn('Cannot submit: auth not ready', { isLoading, isAuthenticated, hasToken: !!token })
+      // Redirect unauthenticated users to auth page, but store their message first
+      if (!isLoading && !isAuthenticated) {
+        // Store only the text message for after authentication
+        const pendingMessage = {
+          text: input.trim(),
+          timestamp: Date.now()
+        }
+        localStorage.setItem('pendingMessage', JSON.stringify(pendingMessage))
+        router.push('/auth')
+      }
+      return
+    }
+
+    // Check quota before sending message
+    const canSend = await checkCanSendMessage()
+    if (!canSend) {
+      console.warn('Message quota exceeded')
+      // Show upgrade prompt or error message
+      if (quotaStatus?.tier_name === 'free') {
+        router.push('/subscription')
+      }
       return
     }
 
@@ -272,7 +297,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         const formData = new FormData()
         formData.append('file', fileToSend)
 
-        console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
+       // console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
 
         // Upload file to dedicated endpoint
         const uploadResponse = await fetch(`${API_BASE_URL}/agent/upload`, {
@@ -289,7 +314,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
           throw new Error(uploadResult.message || 'Upload failed')
         }
 
-        console.log('Upload successful:', uploadResult)
+       // console.log('Upload successful:', uploadResult)
       } catch (error) {
         console.error('File upload failed:', error)
         return
@@ -341,7 +366,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
   // Log when conversationId changes for debugging
   useEffect(() => {
-    console.log('ChatArea: conversationId changed to:', conversationId)
+   // console.log('ChatArea: conversationId changed to:', conversationId)
   }, [conversationId])
 
   // Set hasEverSentMessage to true if there are initial messages
@@ -350,6 +375,35 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       setHasEverSentMessage(true)
     }
   }, [initialMessages.length])
+
+  // Check for and submit pending message after authentication
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      const pendingMessageStr = localStorage.getItem('pendingMessage')
+      if (pendingMessageStr) {
+        try {
+          const pendingMessage = JSON.parse(pendingMessageStr)
+          // Check if message is not too old (24 hours)
+          if (Date.now() - pendingMessage.timestamp < 24 * 60 * 60 * 1000) {
+            // Set the input text only
+            setInput(pendingMessage.text)
+            // Auto-submit after a short delay to ensure UI is ready
+            setTimeout(() => {
+              const form = document.querySelector('form') as HTMLFormElement
+              if (form) {
+                form.requestSubmit()
+              }
+            }, 100)
+          }
+          // Clear the pending message
+          localStorage.removeItem('pendingMessage')
+        } catch (error) {
+          console.error('Error processing pending message:', error)
+          localStorage.removeItem('pendingMessage')
+        }
+      }
+    }
+  }, [isAuthenticated, isLoading])
 
 
 
@@ -369,9 +423,9 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         </div>
 
         <div className="w-full max-w-4xl">
-          <PromptInput onSubmit={handleSubmit} className="my-4 max-w-[95%] mx-auto px-2 pb-2 pt-0 rounded-4xl  border mb-6 flex items-end">
+          <PromptInput onSubmit={handleSubmit} className="my-4 flex-col flex max-w-[95%] mx-auto px-2 pb-2 pt-0 rounded-4xl  border mb-6 flex ">
             {attachedFile && (
-              <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-2">
+              <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center gap-2 w-fit">
                 <File className="h-4 w-4 text-red-600" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{attachedFile.name}</span>
                 <button
@@ -385,15 +439,17 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
             )}
             <div className="flex items-end w-full">
 
-              <PromptInputButton
-                onClick={() => fileInputRef.current?.click()}
-                disabled={status === "streaming"}
-                title="Attach PDF document"
-                variant={"ghost"}
-                className="shadow-none rounded-full"
-              >
-                <Paperclip className="h-4 w-4" />
-              </PromptInputButton>
+              {isAuthenticated && (
+                <PromptInputButton
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={status === "streaming"}
+                  title="Attach PDF document"
+                  variant={"ghost"}
+                  className="shadow-none rounded-full"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </PromptInputButton>
+              )}
               <PromptInputTextarea
                 placeholder="Ask me about graduate programs..."
                 onChange={(e) => setInput(e.target.value)}
@@ -542,15 +598,17 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
           </div>
         )}
         <div className="flex items-end">
-          <PromptInputButton
-            onClick={() => fileInputRef.current?.click()}
-            disabled={status === "streaming"}
-            title="Attach PDF document"
-            variant={"ghost"}
-            className=" shadow-none rounded-full"
-          >
-            <Paperclip className="h-4 w-4" />
-          </PromptInputButton>
+          {isAuthenticated && (
+            <PromptInputButton
+              onClick={() => fileInputRef.current?.click()}
+              disabled={status === "streaming"}
+              title="Attach PDF document"
+              variant={"ghost"}
+              className=" shadow-none rounded-full"
+            >
+              <Paperclip className="h-4 w-4" />
+            </PromptInputButton>
+          )}
           <PromptInputTextarea
             placeholder="Ask me about graduate programs..."
             onChange={(e) => setInput(e.target.value)}

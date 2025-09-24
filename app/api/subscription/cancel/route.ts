@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Extract the authorization header
     const authHeader = request.headers.get('authorization')
@@ -13,18 +13,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('Proxying token quota-status request to backend...')
+   // console.log('Cancelling subscription...')
 
     // Forward the request to the backend
-    const response = await fetch(`${API_BASE_URL}/agent/tokens/quota-status`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/subscription/cancel`, {
+      method: 'POST',
       headers: {
         'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
     })
 
-    console.log('Backend response status:', response.status)
+   // console.log('Backend response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -36,13 +36,13 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    console.log('Token quota-status data from backend:', data)
+   // console.log('Cancellation result from backend:', data)
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching token quota-status:', error)
+    console.error('Error cancelling subscription:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch token quota status' },
+      { error: 'Failed to cancel subscription' },
       { status: 500 }
     )
   }

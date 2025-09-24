@@ -25,7 +25,7 @@ export default function AppLayout({ children, initialConversations = null }: App
     }
   }, [isAuthenticated])
 
-  console.log({ initialConversations })
+  //console.log({ initialConversations })
   
   // Handle hydration mismatch: undefined from Next.js serialization should be treated as null
   const conversations = initialConversations === undefined ? null : initialConversations

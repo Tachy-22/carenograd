@@ -4,27 +4,17 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export async function GET(request: NextRequest) {
   try {
-    // Extract the authorization header
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: 'Authorization header required' },
-        { status: 401 }
-      )
-    }
-
-    console.log('Proxying user token usage request to backend...')
+   // console.log('Fetching subscription tiers from backend...')
 
     // Forward the request to the backend
-    const response = await fetch(`${API_BASE_URL}/agent/tokens/user`, {
+    const response = await fetch(`${API_BASE_URL}/subscription/tiers`, {
       method: 'GET',
       headers: {
-        'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
     })
 
-    console.log('Backend response status:', response.status)
+   // console.log('Backend response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -36,13 +26,13 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    console.log('User token data from backend:', data)
+   // console.log('Subscription tiers data from backend:', data)
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching user token data:', error)
+    console.error('Error fetching subscription tiers:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch user token data' },
+      { error: 'Failed to fetch subscription tiers' },
       { status: 500 }
     )
   }

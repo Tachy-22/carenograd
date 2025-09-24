@@ -26,7 +26,7 @@ interface AuthContextType {
   login: (token: string, user: User) => Promise<void>
   logout: () => Promise<void>
   refreshToken: () => Promise<boolean>
-  apiCall: (config: any) => Promise<any>
+  apiCall: (config: RequestInit & { url: string }) => Promise<Response>
   isTokenExpiring: boolean
 }
 
@@ -39,7 +39,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => { },
   logout: async () => { },
   refreshToken: async () => false,
-  apiCall: async () => { },
+  apiCall: async () => new Response(),
   isTokenExpiring: false
 })
 
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [tokenInfo])
 
   const login = useCallback(async (newToken: string, newUser: User) => {
-    console.log('Login function called with:', { token: !!newToken, user: newUser?.email })
+    //console.log('Login function called with:', { token: !!newToken, user: newUser?.email })
 
     setToken(newToken)
     setUser(newUser)
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     setTokenInfo(tokenInfoData)
 
-    console.log('State updated, storing in localStorage...')
+    //console.log('State updated, storing in localStorage...')
 
     // Store in localStorage for persistence across browser sessions (as per guide)
     localStorage.setItem("jwt_token", newToken)
@@ -129,9 +129,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     Cookies.set("access_token", newToken, cookieOptions)
     Cookies.set("user", JSON.stringify(newUser), cookieOptions)
 
-    console.log('localStorage and client-side cookies updated successfully')
+    //console.log('localStorage and client-side cookies updated successfully')
 
-    console.log('Login function completed')
+    //console.log('Login function completed')
   }, [])
 
   const logout = useCallback(async () => {
@@ -200,14 +200,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshToken = useCallback(async (): Promise<boolean> => {
     // Prevent multiple simultaneous refresh requests
     if (refreshPromiseRef.current) {
-      console.log('Token refresh already in progress, waiting for result...')
+      //console.log('Token refresh already in progress, waiting for result...')
       return refreshPromiseRef.current
     }
 
     // Create new refresh promise
     refreshPromiseRef.current = (async (): Promise<boolean> => {
       try {
-        console.log('Starting token refresh...')
+        //console.log('Starting token refresh...')
         const response = await fetch(`${NEXT_PUBLIC_BASE_URL}/api/auth/refresh`, {
           method: "POST",
           credentials: 'include', // Include cookies for refresh token
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (response.ok) {
           const { token: newToken, user: userData } = await response.json()
-          console.log('Token refresh successful')
+          //console.log('Token refresh successful')
 
           setToken(newToken)
           setUser(userData)
@@ -275,7 +275,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "Authorization": `Bearer ${authToken}`
         }
       })
-      console.log({ response })
+     // console.log({ response })
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
@@ -300,7 +300,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [refreshToken, logout])
 
   // Enhanced API call function with automatic token refresh and retry
-  const apiCall = async (config: any) => {
+  const apiCall = async (config: RequestInit & { url: string }) => {
     const getCurrentToken = () => token || Cookies.get('access_token') || localStorage.getItem('jwt_token') || localStorage.getItem('access_token')
 
     let currentToken = getCurrentToken()
@@ -310,7 +310,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Proactively refresh token if it should be refreshed
     if (shouldRefreshToken()) {
-      console.log('Token should be refreshed, refreshing proactively...')
+      //console.log('Token should be refreshed, refreshing proactively...')
       const refreshed = await refreshToken()
       if (refreshed) {
         currentToken = getCurrentToken() // Get the new token
@@ -319,7 +319,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
 
-    const makeRequest = async (authToken: string, isRetry: boolean = false): Promise<any> => {
+    const makeRequest = async (authToken: string, isRetry: boolean = false): Promise<Response> => {
       try {
         const response = await fetch(config.url, {
           ...config,
@@ -332,14 +332,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (!response.ok) {
           if (response.status === 401 && !isRetry) {
-            console.log('Received 401, attempting token refresh and retry...')
+            //console.log('Received 401, attempting token refresh and retry...')
             // Token expired or invalid, try to refresh once
             const refreshed = await refreshToken()
             if (refreshed) {
               // Retry with new token
               const newToken = getCurrentToken()
               if (newToken) {
-                console.log('Retrying request with new token...')
+                //console.log('Retrying request with new token...')
                 return makeRequest(newToken, true) // Retry with new token, mark as retry
               }
             }
@@ -397,7 +397,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             try {
               await fetchProfile(storedToken)
             } catch (error) {
-              console.log('Profile validation failed during init, but keeping token:', error)
+              //console.log('Profile validation failed during init, but keeping token:', error)
               // Don't logout on initialization errors - user can try using the token
             }
           } catch (parseError) {
@@ -430,13 +430,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const checkTokenExpiration = () => {
       // Use our improved helper methods
       if (isTokenExpired()) {
-        console.log('Token expired, logging out')
+        //console.log('Token expired, logging out')
         logout()
         return
       }
 
       if (shouldRefreshToken()) {
-        console.log('Token should be refreshed, refreshing proactively...')
+        //console.log('Token should be refreshed, refreshing proactively...')
         // Only update if not already in expiring state
         if (!isTokenExpiring) {
           setIsTokenExpiring(true)
@@ -478,7 +478,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Only refresh if token should be refreshed (within buffer time)
       const autoRefreshInterval = setInterval(async () => {
         if (token && tokenInfo && shouldRefreshToken()) {
-          console.log('Auto-refresh interval: refreshing token...')
+          //console.log('Auto-refresh interval: refreshing token...')
           await refreshToken()
         }
       }, AUTO_REFRESH_INTERVAL)

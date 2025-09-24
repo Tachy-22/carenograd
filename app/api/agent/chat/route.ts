@@ -20,7 +20,7 @@ async function makeBackendRequest(authToken: string, messageData: unknown) {
 export async function POST(request: NextRequest) {
   try {
     const { messages, conversationId } = await request.json()
-    console.log({ conversationId })
+   // console.log({ conversationId })
 
     // Get auth token from header or cookies
     let authToken = request.headers.get("authorization")?.replace('Bearer ', '')
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // If unauthorized, try to refresh token and retry once
     if (backendResponse.status === 401) {
-      console.log('AI chat request unauthorized, attempting token refresh...')
+     // console.log('AI chat request unauthorized, attempting token refresh...')
 
       try {
         const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh-jwt-token`, {
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           const newToken = refreshData.access_token || refreshData.token
 
           if (newToken) {
-            console.log('Token refreshed successfully, retrying AI chat request...')
+           // console.log('Token refreshed successfully, retrying AI chat request...')
 
             // Retry with new token
             backendResponse = await makeBackendRequest(newToken, messageData)
