@@ -166,8 +166,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       pendingNavigationIdRef.current = null
     },
     onData: (data) => {
-     // console.log('Received data part from server:', data)
-     // console.log('Current isWaitingForResponse:', isWaitingForResponse)
+      // console.log('Received data part from server:', data)
+      // console.log('Current isWaitingForResponse:', isWaitingForResponse)
 
       // Validate streaming data structure before processing
       if (!data || typeof data !== 'object') {
@@ -177,34 +177,34 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
       // First data chunk means response has started - always clear waiting state
       setIsWaitingForResponse(false)
-      
+
       // Clear optimistic message once streaming starts (real message is now in AI SDK)
       if (optimisticMessage) {
         setOptimisticMessage(null)
       }
 
       // Handle new conversation creation when conversationId is null - store for later navigation
-     // console.log('onData - conversationId:', conversationId, 'data:', data)
+      // console.log('onData - conversationId:', conversationId, 'data:', data)
       if (conversationId === null) {
         if ('type' in data && data.type === 'data-conversation' && 'data' in data && data.data && typeof data.data === 'object' && 'conversationId' in data.data) {
           const newConversationId = data.data.conversationId as string
-         // console.log('New conversation created, will navigate after streaming completes:', newConversationId)
-         // console.log('Setting pendingNavigationId to:', newConversationId)
+          // console.log('New conversation created, will navigate after streaming completes:', newConversationId)
+          // console.log('Setting pendingNavigationId to:', newConversationId)
           pendingNavigationIdRef.current = newConversationId
         }
       }
     },
     onFinish: async () => {
-     // console.log('AI response completed - updating quota')
-     // console.log('onFinish - pendingNavigationId:', pendingNavigationIdRef.current)
-     // console.log('onFinish - conversationId:', conversationId)
+      // console.log('AI response completed - updating quota')
+      // console.log('onFinish - pendingNavigationId:', pendingNavigationIdRef.current)
+      // console.log('onFinish - conversationId:', conversationId)
       setIsWaitingForResponse(false)
       updateQuotaAfterMessage()
       window.dispatchEvent(new CustomEvent('ai-response-complete'))
 
       // Navigate to new conversation if one was created during streaming
       if (pendingNavigationIdRef.current) {
-       // console.log('Streaming complete, navigating to:', pendingNavigationIdRef.current)
+        // console.log('Streaming complete, navigating to:', pendingNavigationIdRef.current)
         const newConversationId = pendingNavigationIdRef.current
         pendingNavigationIdRef.current = null
 
@@ -216,10 +216,10 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         })
         await revalidateData(`/chat/${newConversationId}`)
 
-       // console.log('Updated URL to new conversation')
+        // console.log('Updated URL to new conversation')
       } else if (conversationId && conversationId !== 'null') {
         // For existing conversations, revalidate the current conversation messages
-       // console.log('Revalidating current conversation messages:', conversationId)
+        // console.log('Revalidating current conversation messages:', conversationId)
         await revalidateData(`/chat/${conversationId}`)
 
       }
@@ -227,7 +227,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
     }
   })
- // console.log({ status })
+  // console.log({ status })
 
 
 
@@ -298,7 +298,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         const formData = new FormData()
         formData.append('file', fileToSend)
 
-       // console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
+        // console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
 
         // Upload file to dedicated endpoint
         const uploadResponse = await fetch(`${API_BASE_URL}/agent/upload`, {
@@ -315,7 +315,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
           throw new Error(uploadResult.message || 'Upload failed')
         }
 
-       // console.log('Upload successful:', uploadResult)
+        // console.log('Upload successful:', uploadResult)
       } catch (error) {
         console.error('File upload failed:', error)
         return
@@ -367,7 +367,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
   // Log when conversationId changes for debugging
   useEffect(() => {
-   // console.log('ChatArea: conversationId changed to:', conversationId)
+    // console.log('ChatArea: conversationId changed to:', conversationId)
   }, [conversationId])
 
   // Set hasEverSentMessage to true if there are initial messages
@@ -417,14 +417,15 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
         <div className="text-center mb-8">
-          <Badge variant="outline" className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
-            <FlaskRound className="h-3 w-3 mr-1" />
-            Beta
-          </Badge>
+
           <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             {isAuthenticated ? <>Welcome to Carenograd!</> : <>Carenograd</>}
           </h1>
           {isAuthenticated && <>Your AI assistant for graduate school success</>}
+          {!isAuthenticated && <Badge variant="outline" className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
+            <FlaskRound className="h-3 w-3 mr-1" />
+            Beta
+          </Badge>}
         </div>
 
         <div className="w-full max-w-4xl">
