@@ -22,21 +22,21 @@ export default function SubscriptionPage() {
   }, [isAuthenticated, router])
 
   const handleSubscribe = async (tierName: string) => {
-   // console.log('handleSubscribe called with:', tierName)
+    // console.log('handleSubscribe called with:', tierName)
 
     if (!isAuthenticated) {
-    //  console.log('User not authenticated, redirecting to auth')
+      //  console.log('User not authenticated, redirecting to auth')
       router.push('/auth')
       return
     }
 
-   // console.log('Setting subscribing state for:', tierName)
+    // console.log('Setting subscribing state for:', tierName)
     setIsSubscribing(tierName)
     try {
       const callbackUrl = `${window.location.origin}/subscription/verify`
-     // console.log('Calling subscribeTo with:', { tierName, callbackUrl })
+      // console.log('Calling subscribeTo with:', { tierName, callbackUrl })
       const result = await subscribeTo(tierName, callbackUrl)
-    //  console.log('subscribeTo result:', result)
+      //  console.log('subscribeTo result:', result)
 
       if (tierName === 'free') {
         toast.success('Successfully switched to Free tier!')
@@ -84,8 +84,8 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="w-full max-w-4xl max-h-[90vh]  rounded-lg ">
-      <h1 className="text-2xl font-semibold text-foreground mx-auto w-fit">
+    <div className="w-full max-w-4xl max-h-[100vh]  rounded-lg overflow-y-auto ">
+      <h1 className="text-2xl font-semibold text-foreground mx-auto w-fit pt-8 md:pt-0">
         Upgrade your plan
       </h1>
       <div className="px-6 py-6">
