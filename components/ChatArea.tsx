@@ -229,7 +229,28 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
   })
   // console.log({ status })
 
-
+  // Filter out duplicate countdown messages, keeping only the most recent one
+  const filteredMessages = messages.filter((message, index) => {
+    if (message.role === 'assistant' && message.parts?.[0]?.type === 'text') {
+      const text = message.parts[0].text
+      const isCountdownMessage = text.includes('⏳ Quota limit reached. Waiting') && text.includes('for reset...')
+      
+      if (isCountdownMessage) {
+        // Look for any later countdown messages
+        for (let i = index + 1; i < messages.length; i++) {
+          const laterMessage = messages[i]
+          if (laterMessage.role === 'assistant' && laterMessage.parts?.[0]?.type === 'text') {
+            const laterText = laterMessage.parts[0].text
+            if (laterText.includes('⏳ Quota limit reached. Waiting') && laterText.includes('for reset...')) {
+              // There's a later countdown message, so filter out this one
+              return false
+            }
+          }
+        }
+      }
+    }
+    return true
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -256,8 +277,8 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     if (!canSend) {
       console.warn('Message quota exceeded')
       // Show upgrade prompt or error message
-      if (quotaStatus?.tier_name === 'free') {
-        router.push('/subscription')
+      if (quotaStatus?.tier_name === 'free' && quotaStatus?.messages_remaining === 0) {
+        window.dispatchEvent(new CustomEvent('open-subscription-modal'))
       }
       return
     }
@@ -410,7 +431,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
 
   // Check if we have any messages or if a message has ever been sent
-  const showCenteredLayout = messages.length === 0 && !hasEverSentMessage
+  const showCenteredLayout = filteredMessages.length === 0 && !hasEverSentMessage
 
   // If no messages, show centered layout
   if (showCenteredLayout) {
@@ -457,7 +478,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
                 </PromptInputButton>
               )}
               <PromptInputTextarea
-                placeholder="Ask me about graduate programs..."
+                placeholder="Hey there..."
                 onChange={(e) => setInput(e.target.value)}
                 value={input}
                 className="min-h-[60px]"
@@ -529,7 +550,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
           )}
 
           {/* Render all messages from AI SDK */}
-          {messages?.filter(message => message && message.id && message.role).map((message) => (
+          {filteredMessages?.filter(message => message && message.id && message.role).map((message) => (
             <div key={message.id}>
               <Message from={message.role}>
                 <MessageContent>
@@ -616,7 +637,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
             </PromptInputButton>
           )}
           <PromptInputTextarea
-            placeholder="Ask me about graduate programs..."
+            placeholder="Hey there..."
             onChange={(e) => setInput(e.target.value)}
             value={input}
           />

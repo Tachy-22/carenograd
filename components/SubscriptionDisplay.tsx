@@ -12,11 +12,9 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
 
 export default function SubscriptionDisplay() {
   const { quotaStatus, currentSubscription, isQuotaLoading } = useSubscription()
-  const router = useRouter()
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
 
   const getProgressColor = (messagesRemaining: number, dailyLimit: number) => {
@@ -32,7 +30,7 @@ export default function SubscriptionDisplay() {
   }
 
   const handleUpgrade = () => {
-    router.push('/subscription')
+    window.dispatchEvent(new CustomEvent('open-subscription-modal'))
   }
 
   const handleManageSubscription = () => {

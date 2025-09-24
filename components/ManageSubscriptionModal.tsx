@@ -154,16 +154,15 @@ export default function ManageSubscriptionModal({ isOpen, onOpenChange }: Manage
                   <AlertDialogDescription>
                     This will cancel your Pro subscription and you&apos;ll be downgraded to the Free plan
                     at the end of your current billing period ({new Date(currentSubscription.current_period_end).toLocaleDateString()}).
-
-                    <br /><br />
-
-                    You will lose:
-                    <ul className="list-disc list-inside mt-2 space-y-1">
+                  </AlertDialogDescription>
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">You will lose:</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                       <li>100 messages per day (reduced to 20)</li>
                       <li>Priority support</li>
                       <li>Advanced features</li>
                     </ul>
-                  </AlertDialogDescription>
+                  </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Keep Subscription</AlertDialogCancel>

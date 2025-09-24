@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
 import { useSubscription } from "@/contexts/SubscriptionContext"
+import SubscriptionModal from "@/components/SubscriptionModal"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import SubscriptionDisplay from "@/components/SubscriptionDisplay"
 import ManageSubscriptionModal from "@/components/ManageSubscriptionModal"
@@ -26,6 +28,7 @@ export default function Navigation() {
   const { currentSubscription } = useSubscription()
   const router = useRouter()
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -41,12 +44,24 @@ export default function Navigation() {
     router.push(`/`)
   }
 
+  // Listen for global events to open subscription modal
+  useEffect(() => {
+    const handleOpenSubscription = () => {
+      setIsSubscriptionModalOpen(true)
+    }
+
+    window.addEventListener('open-subscription-modal', handleOpenSubscription)
+    return () => {
+      window.removeEventListener('open-subscription-modal', handleOpenSubscription)
+    }
+  }, [])
+
   const getCurrentTier = () => {
     return currentSubscription?.tier_name || 'free'
   }
 
   const handleUpgrade = () => {
-    router.push('/subscription')
+    setIsSubscriptionModalOpen(true)
   }
 
   const handleManageSubscription = () => {
@@ -55,13 +70,13 @@ export default function Navigation() {
 
   return (
     <header className=" sticky-0 w-full top-0 right-0  bg-bakground shadow-xs">
-      <div className="flex justify-between items-center h-[3.5rem] px-4 ">
+      <div className="flex justify-between items-center h-[3.5rem] pr-2 pl-2">
         <div className="flex items-center space-x-4">
           {isAuthenticated && <SidebarTrigger className="md:hidden" />}
           {isAuthenticated ? (
             getCurrentTier() === 'pro' ? (
               <div className="flex items-center gap-3">
-                <span className="text-xl font-semibold">Carenograd Pro</span>
+                <span className="text-lg font-semibold">Carenograd Pro</span>
                 <Badge variant="outline" className=" bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
                   <FlaskRound className="h-3 w-3 mr-1" />
                   Beta
@@ -70,7 +85,7 @@ export default function Navigation() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 text-xl font-semibold p-2">
+                  <Button variant="ghost" className="flex items-center gap-2 text-lg font-semibold p-2">
                     Carenograd
                     <Badge variant="outline" className=" bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
                       <FlaskRound className="h-3 w-3 mr-1" />
@@ -129,7 +144,8 @@ export default function Navigation() {
               >
                 <PenBox className="h-4 w-4" />
               </Button>
-              <SubscriptionDisplay /> */}
+               */}
+              <SubscriptionDisplay />
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -197,6 +213,12 @@ export default function Navigation() {
           )}
         </div>
       </div>
+
+      {/* Global Subscription Modal */}
+      <SubscriptionModal
+        isOpen={isSubscriptionModalOpen}
+        onOpenChange={setIsSubscriptionModalOpen}
+      />
     </header>
   )
 }
