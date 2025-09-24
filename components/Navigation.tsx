@@ -61,7 +61,6 @@ export default function Navigation() {
           {isAuthenticated ? (
             getCurrentTier() === 'pro' ? (
               <div className="flex items-center gap-3">
-                <Crown className="h-4 w-4" />
                 <span className="text-xl font-semibold">Carenograd Pro</span>
                 <Badge variant="outline" className=" bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
                   <FlaskRound className="h-3 w-3 mr-1" />
@@ -72,7 +71,6 @@ export default function Navigation() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2 text-xl font-semibold p-2">
-                    <Zap className="h-5 w-5 text-gray-600" />
                     Carenograd
                     <Badge variant="outline" className=" bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none">
                       <FlaskRound className="h-3 w-3 mr-1" />
@@ -123,7 +121,7 @@ export default function Navigation() {
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
-              <Button
+              {/* <Button
                 onClick={handleNewChat}
                 variant="ghost"
                 className="justify-start w-4 gap-2 p-0 [display:inline-flex] [@media(min-width:768px)]:hidden"
@@ -131,7 +129,7 @@ export default function Navigation() {
               >
                 <PenBox className="h-4 w-4" />
               </Button>
-              <SubscriptionDisplay />
+              <SubscriptionDisplay /> */}
               {user && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
