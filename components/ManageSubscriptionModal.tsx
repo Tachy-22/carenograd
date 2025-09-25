@@ -140,7 +140,7 @@ export default function ManageSubscriptionModal({ isOpen, onOpenChange }: Manage
             </div>
             <p className="text-sm text-muted-foreground">
               Cancelling will downgrade you to the Free plan at the end of your current billing period.
-              You&apos;ll lose access to Pro features and your daily message limit will be reduced to 20 messages.
+              You&apos;ll lose access to Pro features and your daily message limit will be reduced to 10 messages.
             </p>
 
             <AlertDialog>
