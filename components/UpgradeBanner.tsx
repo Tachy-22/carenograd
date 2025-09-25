@@ -27,16 +27,10 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
     tierName: quotaStatus?.tier_name,
     userCreatedAt: user?.created_at 
   })
-  
-  // Don't show banner if not on free tier
-  if (!isFreeTier || !user) {
-    console.log('UpgradeBanner: Not showing banner because', { isFreeTier, hasUser: !!user })
-    return null
-  }
 
   // Calculate days remaining until 3-day trial ends
   useEffect(() => {
-    if (!user.created_at) return
+    if (!user?.created_at) return
 
     const calculateTimeRemaining = () => {
       const createdAt = new Date(user.created_at)
@@ -66,11 +60,17 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
     const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
 
     return () => clearInterval(interval)
-  }, [user.created_at])
+  }, [user?.created_at])
+
+  // Don't show banner if not on free tier
+  if (!isFreeTier || !user) {
+    console.log('UpgradeBanner: Not showing banner because', { isFreeTier, hasUser: !!user })
+    return null
+  }
 
   // Check if account is older than 3 days
   const isTrialEnded = () => {
-    if (!user.created_at) return false
+    if (!user?.created_at) return false
     const createdAt = new Date(user.created_at)
     const now = new Date()
     const daysDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)

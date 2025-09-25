@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useSubscription } from "@/contexts/SubscriptionContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { X, MessageSquare, Upload, Brain, Search, Settings } from "lucide-react"
+import { MessageSquare, Upload, Brain, Search, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {

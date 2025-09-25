@@ -18,7 +18,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import SubscriptionDisplay from "@/components/SubscriptionDisplay"
 import ManageSubscriptionModal from "@/components/ManageSubscriptionModal"
-import { PenBox, ChevronDown, Zap, Crown, Settings, LogOut, FlaskRound } from "lucide-react"
+import { ChevronDown, Zap, Crown, Settings, LogOut, FlaskRound } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 import Image from "next/image"
@@ -39,9 +39,6 @@ export default function Navigation() {
       // Fallback redirect
       router.push("/")
     }
-  }
-  const handleNewChat = () => {
-    router.push(`/`)
   }
 
   // Listen for global events to open subscription modal
