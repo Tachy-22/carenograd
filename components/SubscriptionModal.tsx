@@ -111,6 +111,11 @@ export default function SubscriptionModal({ isOpen, onOpenChange }: Subscription
                   ₦{tier.price_ngn.toLocaleString()}
                   <span className="text-sm font-normal text-muted-foreground">/month</span>
                 </div>
+                {tier.name === 'free' && (
+                  <p className="text-xs  font-medium">
+                    (                    Available for first 3 days
+                    )                  </p>
+                )}
               </div>
 
               <div className="space-y-3 mb-6">

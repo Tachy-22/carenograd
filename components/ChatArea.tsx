@@ -24,6 +24,7 @@ import { Actions, Action } from '@/components/ai-elements/actions'
 import { Task, TaskTrigger, TaskContent, TaskItem } from '@/components/ai-elements/task'
 import { File, X, Copy, Check, Paperclip, CheckCircle, Loader, FlaskRound } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import UpgradeBanner from "@/components/UpgradeBanner"
 import { revalidateData } from "@/lib/revalidate"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -110,7 +111,7 @@ const MessageWithCopy = ({ content, role }: { content: string; role: 'user' | 'a
 };
 
 export default function ChatArea({ conversationId, initialMessages = [] }: ChatAreaProps) {
-  const { token, isAuthenticated, isLoading } = useAuth()
+  const { token, isAuthenticated, isLoading, user } = useAuth()
   const { quotaStatus, checkCanSendMessage, updateQuotaAfterMessage } = useSubscription()
   //// console.log('Environment:', process.env.NEXT_PUBLIC_NODE_ENV)
   const router = useRouter()
@@ -122,6 +123,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
   const [, setIsWaitingForResponse] = useState(false)
   const [hasEverSentMessage, setHasEverSentMessage] = useState(false)
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null)
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false)
 
   const pendingNavigationIdRef = useRef<string | null>(null)
 
@@ -254,6 +256,9 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const messageText = input
+    const fileToSend = attachedFile
+    setInput("")
     if ((!input.trim() && !attachedFile) || status === "streaming") return
 
     // Don't allow submission if auth is still loading or user is not authenticated
@@ -272,6 +277,19 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
       return
     }
 
+    // Check if free tier user's account is older than 3 days
+    if (quotaStatus?.tier_name === 'free' && user?.created_at) {
+      const createdAt = new Date(user.created_at)
+      const now = new Date()
+      const daysDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      
+      if (daysDiff >= 3) {
+        console.log('Free tier account is older than 3 days, showing subscription modal')
+        window.dispatchEvent(new CustomEvent('open-subscription-modal'))
+        return
+      }
+    }
+
     // Check quota before sending message
     const canSend = await checkCanSendMessage()
     if (!canSend) {
@@ -284,9 +302,7 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     }
 
     // Clear input immediately for better UX
-    const messageText = input
-    const fileToSend = attachedFile
-    setInput("")
+    
     setAttachedFile(null)
     setIsWaitingForResponse(true)
 
@@ -437,6 +453,13 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
   if (showCenteredLayout) {
     return (
       <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center max-w-4xl mx-auto w-full px-4">
+        {/* Show upgrade banner for free tier users */}
+        {!isBannerDismissed && quotaStatus?.tier_name === 'free' && (
+          <div className="w-full max-w-2xl mb-6">
+            <UpgradeBanner onDismiss={() => setIsBannerDismissed(true)} />
+          </div>
+        )}
+
         <div className="text-center mb-8">
 
           <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -522,6 +545,18 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden justify-between max-w-4xl mx-auto w-full" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
       <Conversation className="h-full pt-4">
         <ConversationContent>
+          {/* Show upgrade banner for free tier users */}
+          {(() => {
+            console.log('Banner debug:', {
+              isBannerDismissed,
+              tierName: quotaStatus?.tier_name,
+              showBanner: !isBannerDismissed && quotaStatus?.tier_name === 'free'
+            })
+            return !isBannerDismissed && quotaStatus?.tier_name === 'free'
+          })() && (
+            <UpgradeBanner onDismiss={() => setIsBannerDismissed(true)} />
+          )}
+
           {/* Show optimistic first message if present */}
           {optimisticMessage && (
             <>

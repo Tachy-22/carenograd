@@ -11,14 +11,14 @@ export default function VerifySubscriptionPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { verifyPayment, fetchCurrentSubscription } = useSubscription()
-  
+
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
   const [subscription, setSubscription] = useState<CurrentSubscription | null>(null)
 
   useEffect(() => {
     const reference = searchParams.get('reference')
-    
+
     if (!reference) {
       setStatus('error')
       setMessage('No payment reference found')
@@ -31,7 +31,7 @@ export default function VerifySubscriptionPage() {
           setStatus('success')
           setMessage('Payment successful! Your Pro subscription is now active.')
           setSubscription(result.subscription || null)
-          
+
           // Refresh subscription data
           setTimeout(() => {
             fetchCurrentSubscription()
@@ -53,7 +53,7 @@ export default function VerifySubscriptionPage() {
   }
 
   const handleRetry = () => {
-    router.push('/subscription')
+    router.push('/')
   }
 
   return (
@@ -71,17 +71,17 @@ export default function VerifySubscriptionPage() {
               <XCircle className="h-12 w-12 text-red-600" />
             )}
           </div>
-          
+
           <CardTitle className="text-2xl">
             {status === 'loading' && 'Verifying Payment...'}
             {status === 'success' && 'Payment Successful!'}
             {status === 'error' && 'Payment Failed'}
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="text-center space-y-4">
           <p className="text-gray-600">{message}</p>
-          
+
           {subscription && status === 'success' && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
               <h3 className="font-semibold text-green-800">Subscription Details</h3>
@@ -93,14 +93,14 @@ export default function VerifySubscriptionPage() {
               </div>
             </div>
           )}
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             {status === 'success' && (
               <Button onClick={handleContinue} className="flex-1">
                 Continue to Dashboard
               </Button>
             )}
-            
+
             {status === 'error' && (
               <>
                 <Button onClick={handleRetry} className="flex-1">
@@ -111,7 +111,7 @@ export default function VerifySubscriptionPage() {
                 </Button>
               </>
             )}
-            
+
             {status === 'loading' && (
               <Button disabled className="flex-1">
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -119,7 +119,7 @@ export default function VerifySubscriptionPage() {
               </Button>
             )}
           </div>
-          
+
           {status === 'error' && (
             <p className="text-xs text-gray-500 mt-4">
               If you continue to experience issues, please contact our support team with reference: {searchParams.get('reference')}
