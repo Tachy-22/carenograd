@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     // Get the FormData from the request
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const conversationId = formData.get('conversationId') as string
 
     if (!file) {
       return NextResponse.json({ message: 'No file provided' }, { status: 400 })
@@ -32,6 +33,11 @@ export async function POST(request: NextRequest) {
     // Create new FormData for backend request
     const backendFormData = new FormData()
     backendFormData.append('file', file)
+    
+    // Include conversationId if provided
+    if (conversationId) {
+      backendFormData.append('conversationId', conversationId)
+    }
 
     // Forward request to backend
     const backendResponse = await fetch(`${API_BASE_URL}/agent/upload`, {

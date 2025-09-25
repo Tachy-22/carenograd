@@ -334,6 +334,11 @@ export default function ChatArea({ conversationId, initialMessages = [] }: ChatA
         // Create FormData for file upload
         const formData = new FormData()
         formData.append('file', fileToSend)
+        
+        // Include conversationId if available to keep upload in same conversation
+        if (conversationId) {
+          formData.append('conversationId', conversationId)
+        }
 
         // console.log(`Uploading PDF: ${fileToSend.name} (${(fileToSend.size / 1024 / 1024).toFixed(1)} MB)`)
 
