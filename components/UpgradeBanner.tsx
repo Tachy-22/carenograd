@@ -20,17 +20,17 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
 
   // Check if user is on free tier
   const isFreeTier = quotaStatus?.tier_name === 'free'
-  
-  console.log('UpgradeBanner render:', { 
-    isFreeTier, 
-    user: !!user, 
+
+  console.log('UpgradeBanner render:', {
+    isFreeTier,
+    user: !!user,
     tierName: quotaStatus?.tier_name,
-    userCreatedAt: user?.created_at 
+    userCreatedAt: user?.created_at
   })
 
   // Calculate days remaining until 3-day trial ends
   useEffect(() => {
-    if (!user?.created_at) return
+    if (!user) return
 
     const calculateTimeRemaining = () => {
       const createdAt = new Date(user.created_at)
@@ -60,7 +60,7 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
     const interval = setInterval(calculateTimeRemaining, 60000) // Update every minute
 
     return () => clearInterval(interval)
-  }, [user?.created_at])
+  }, [user])
 
   // Don't show banner if not on free tier
   if (!isFreeTier || !user) {
@@ -86,7 +86,7 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
   return (
     <div className={cn(
       "relative w-full p-4 border rounded-lg mb-4",
-      isTrialEnded() 
+      isTrialEnded()
         ? "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 dark:from-orange-950/20 dark:to-red-950/20 dark:border-orange-800"
         : "bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-950/20 dark:to-purple-950/20 dark:border-blue-800",
       className
