@@ -45,9 +45,9 @@ export default function AuthPage() {
                 />
               </div>
 
-              <CardTitle className="text-2xl text-center">Log in for a more personalized experience</CardTitle>
+              <CardTitle className="text-2xl text-center">Sign in to get the Carenograd experience</CardTitle>
               <p className="text-sm text-muted-foreground text-center">
-                Get smarter responses, upload files and images, and access your conversation history.
+                Get smart responses, upload Academic CVs and access your conversation history.
               </p>
             </CardHeader>
             <CardContent className="space-y-4 mt-8">
