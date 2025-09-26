@@ -8,6 +8,14 @@ import { Badge } from "@/components/ui/badge"
 import { X, Crown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface User {
+  id: string
+  email: string
+  name: string
+  picture?: string
+  created_at: string
+}
+
 interface UpgradeBannerProps {
   onDismiss?: () => void
   className?: string
@@ -86,8 +94,9 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
 
   // Listen for profile updates
   useEffect(() => {
-    const handleProfileUpdate = (event: any) => {
-      const updatedUser = event.detail
+    const handleProfileUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<User>
+      const updatedUser = customEvent.detail
       if (updatedUser?.created_at) {
         //console.log('Profile updated via event:', updatedUser)
         const trialEnded = calculateTrialStatus(updatedUser.created_at)
