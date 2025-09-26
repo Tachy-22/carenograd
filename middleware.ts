@@ -19,9 +19,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Debug logging
-  if (pathname.startsWith('/admin')) {
-    console.log('🔧 MIDDLEWARE DEBUG: Admin route detected, bypassing all checks:', pathname)
-  }
+  // if (pathname.startsWith('/admin')) {
+  //   console.log('🔧 MIDDLEWARE DEBUG: Admin route detected, bypassing all checks:', pathname)
+  // }
 
   // Skip middleware for static files, API routes, and Next.js internal routes
   if (
@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
     pathname === '/auth/google/callback' ||
     pathname === '/auth/callback'
   ) {
-    console.log('🔄 Auth callback detected, allowing through:', pathname)
+   // console.log('🔄 Auth callback detected, allowing through:', pathname)
     return NextResponse.next()
   }
 

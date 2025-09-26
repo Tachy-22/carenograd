@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isTokenExpiring, setIsTokenExpiring] = useState(false)
 
-  const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL 
+  const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
   // Token refresh constants
   const REFRESH_BUFFER = 5 * 60 * 1000 // 5 minutes before expiration
@@ -96,7 +96,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     //console.log('Login function called with:', { token: !!newToken, user: newUser?.email })
 
     setToken(newToken)
-    setUser(newUser)
+
+    await fetchProfile(newToken)
 
     // Set token info with expiration tracking
     const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
@@ -275,7 +276,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "Authorization": `Bearer ${authToken}`
         }
       })
-     // console.log({ response })
+      // console.log({ response })
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)

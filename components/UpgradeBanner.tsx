@@ -32,23 +32,23 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
   // Check if user is on free tier
   const isFreeTier = quotaStatus?.tier_name === 'free'
 
-  console.log('UpgradeBanner render:', {
-    isFreeTier,
-    user: !!user,
-    tierName: quotaStatus?.tier_name,
-    userCreatedAt: user?.created_at,
-    isTrialEnded,
-    timeRemaining,
-    isLoading,
-    hasTriedFetchingProfile,
-    fullUser: user, // Log the full user object to see available fields
-    fullQuotaStatus: quotaStatus // Also log quota status to see all available fields
-  })
+  // //console.log('UpgradeBanner render:', {
+  //   isFreeTier,
+  //   user: !!user,
+  //   tierName: quotaStatus?.tier_name,
+  //   userCreatedAt: user?.created_at,
+  //   isTrialEnded,
+  //   timeRemaining,
+  //   isLoading,
+  //   hasTriedFetchingProfile,
+  //   fullUser: user, // Log the full user object to see available fields
+  //   fullQuotaStatus: quotaStatus // Also log quota status to see all available fields
+  // })
 
   // Manually fetch profile if user exists but created_at is missing
   useEffect(() => {
     if (user && !user.created_at && !isLoading && !hasTriedFetchingProfile) {
-      console.log('User exists but missing created_at, manually fetching profile...')
+      //console.log('User exists but missing created_at, manually fetching profile...')
       setHasTriedFetchingProfile(true)
 
       // Use the Next.js API route instead of direct backend call
@@ -66,7 +66,7 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
             throw new Error('Profile fetch failed')
           })
           .then(profileData => {
-            console.log('Manual profile fetch result:', profileData)
+            //console.log('Manual profile fetch result:', profileData)
             // Force a context update by calling the auth context's login method
             // This is a bit hacky but necessary since the context doesn't expose a way to update user data
             if (profileData.created_at && profileData.id === user.id) {
@@ -89,10 +89,10 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
     const handleProfileUpdate = (event: any) => {
       const updatedUser = event.detail
       if (updatedUser?.created_at) {
-        console.log('Profile updated via event:', updatedUser)
+        //console.log('Profile updated via event:', updatedUser)
         const trialEnded = calculateTrialStatus(updatedUser.created_at)
         setIsTrialEnded(trialEnded)
-        console.log('Trial status calculated from updated profile:', trialEnded)
+        //console.log('Trial status calculated from updated profile:', trialEnded)
       }
     }
 
@@ -105,7 +105,7 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
     if (user?.created_at) {
       const trialEnded = calculateTrialStatus(user.created_at)
       setIsTrialEnded(trialEnded)
-      console.log('Trial status calculated:', trialEnded)
+      //console.log('Trial status calculated:', trialEnded)
     }
   }, [user?.created_at])
 
@@ -155,13 +155,13 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
   }, [user?.created_at])
 
   // Don't show banner if not on free tier or still loading user data
-  if (!isFreeTier || !user ) {
-    console.log('UpgradeBanners Not showing banner because', {
-      isFreeTier,
-      hasUser: !!user,
-      isLoading,
-      hasCreatedAt: !!user?.created_at
-    })
+  if (!isFreeTier || !user) {
+    //console.log('UpgradeBanners Not showing banner because', {
+    //   isFreeTier,
+    //   hasUser: !!user,
+    //   isLoading,
+    //   hasCreatedAt: !!user?.created_at
+    // })
     return null
   }
 
@@ -169,11 +169,11 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
     window.dispatchEvent(new CustomEvent('open-subscription-modal'))
   }
 
-  console.log('UpgradeBanner: About to render banner')
+  //console.log('UpgradeBanner: About to render banner')
 
   return (
     <div className={cn(
-      "relative w-full p-4 border rounded-lg mb-4",
+      "sticky top-[0rem] left-0 w-full p-4 border rounded-lg mb-4 ",
       isTrialEnded
         ? "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 dark:from-orange-950/20 dark:to-red-950/20 dark:border-orange-800"
         : "bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-950/20 dark:to-purple-950/20 dark:border-blue-800",
@@ -184,7 +184,7 @@ export default function UpgradeBanner({ onDismiss, className }: UpgradeBannerPro
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-2 right-2 h-6 w-6"
+          className="absolute top-0 right-0 h-6 w-6"
           onClick={onDismiss}
         >
           <X className="h-4 w-4" />
