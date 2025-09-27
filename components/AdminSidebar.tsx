@@ -6,7 +6,9 @@ import {
   Users, 
   MessageSquare, 
   BarChart3,
-  Zap
+  Zap,
+  Mail,
+  Send
 } from "lucide-react"
 import {
   Sidebar,
@@ -29,6 +31,16 @@ const navigation = [
     name: 'Users',
     href: '/admin/users',
     icon: Users,
+  },
+  {
+    name: 'Subscribers',
+    href: '/admin/subscribers',
+    icon: Mail,
+  },
+  {
+    name: 'Campaigns',
+    href: '/admin/campaigns',
+    icon: Send,
   },
   {
     name: 'Conversations',
