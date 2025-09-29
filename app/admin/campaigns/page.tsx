@@ -424,7 +424,7 @@ export default function CampaignsPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This will permanently delete "{campaign.name}". 
+                                This will permanently delete &quot;{campaign.name}&quot;. 
                                 This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
