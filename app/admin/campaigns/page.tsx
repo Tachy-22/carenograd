@@ -18,7 +18,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -35,13 +34,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { 
   Search, 
   Mail, 
   Plus, 
@@ -50,7 +42,6 @@ import {
   Eye, 
   Edit, 
   Trash2,
-  Calendar,
   Users,
   TrendingUp,
   Clock
@@ -74,7 +65,6 @@ export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
-  const [selectedCampaign, setSelectedCampaign] = useState<EmailCampaign | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [newCampaign, setNewCampaign] = useState<CreateCampaignDto>({
@@ -201,7 +191,6 @@ export default function CampaignsPage() {
 
       toast.success('Campaign deleted successfully')
       await fetchCampaigns(currentPage)
-      setSelectedCampaign(null)
     } catch (err) {
       console.error('Error deleting campaign:', err)
       toast.error(err instanceof Error ? err.message : 'Failed to delete campaign')
@@ -415,7 +404,7 @@ export default function CampaignsPage() {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => setSelectedCampaign(campaign)}
+                              onClick={() => deleteCampaign(campaign.id)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

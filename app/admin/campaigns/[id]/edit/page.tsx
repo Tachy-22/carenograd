@@ -9,13 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -27,17 +20,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   ArrowLeft,
   Save,
   Eye,
-  Send,
-  RefreshCw,
   Users,
   Mail,
-  Clock,
   AlertCircle
 } from "lucide-react"
 import { toast } from "sonner"
@@ -171,31 +160,6 @@ export default function CampaignEditPage() {
     }
   }
 
-  const sendCampaign = async () => {
-    try {
-      // Save first
-      await saveCampaign()
-
-      const response = await fetch(`/api/admin/campaigns/${campaignId}/send`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to send campaign')
-      }
-
-      toast.success('Campaign sent successfully!')
-      router.push('/admin/campaigns')
-    } catch (err) {
-      console.error('Error sending campaign:', err)
-      toast.error(err instanceof Error ? err.message : 'Failed to send campaign')
-    }
-  }
 
   const getStatusBadge = (status: CampaignStatus) => {
     const statusConfig = {
@@ -217,7 +181,7 @@ export default function CampaignEditPage() {
 
   useEffect(() => {
     fetchCampaign()
-  }, [campaignId])
+  }, [campaignId, fetchCampaign])
 
   if (loading) {
     return (
@@ -236,7 +200,6 @@ export default function CampaignEditPage() {
   }
 
   const canEdit = campaign.status === CampaignStatus.DRAFT
-  const canSend = campaign.status === CampaignStatus.DRAFT && formData.html_content
 
   return (
     <div className="space-y-6">

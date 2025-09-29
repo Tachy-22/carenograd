@@ -23,7 +23,7 @@ export async function POST(
       if (text) {
         body = JSON.parse(text)
       }
-    } catch (error) {
+    } catch {
       // If no body or invalid JSON, use empty object
       body = {}
     }
