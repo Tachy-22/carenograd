@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -63,7 +63,7 @@ export default function CampaignDetailPage() {
   })
   const [error, setError] = useState<string | null>(null)
 
-  const fetchCampaign = async () => {
+  const fetchCampaign = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/admin/campaigns/${campaignId}`, {
@@ -89,9 +89,9 @@ export default function CampaignDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [campaignId, token])
 
-  const fetchEmailLogs = async () => {
+  const fetchEmailLogs = useCallback(async () => {
     try {
       setLogsLoading(true)
       const response = await fetch(`/api/admin/campaigns/${campaignId}/logs`, {
@@ -113,7 +113,7 @@ export default function CampaignDetailPage() {
     } finally {
       setLogsLoading(false)
     }
-  }
+  }, [campaignId, token])
 
   const sendCampaign = async () => {
     try {
@@ -187,7 +187,7 @@ export default function CampaignDetailPage() {
 
   useEffect(() => {
     fetchCampaign()
-  }, [campaignId, fetchCampaign])
+  }, [fetchCampaign])
 
   useEffect(() => {
     if (campaign && campaign.status !== CampaignStatus.DRAFT) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,7 +58,7 @@ export default function CampaignEditPage() {
     }
   })
 
-  const fetchCampaign = async () => {
+  const fetchCampaign = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/admin/campaigns/${campaignId}`, {
@@ -96,7 +96,7 @@ export default function CampaignEditPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [campaignId, token, router])
 
   const saveCampaign = async () => {
     try {
@@ -181,7 +181,7 @@ export default function CampaignEditPage() {
 
   useEffect(() => {
     fetchCampaign()
-  }, [campaignId, fetchCampaign])
+  }, [fetchCampaign])
 
   if (loading) {
     return (
