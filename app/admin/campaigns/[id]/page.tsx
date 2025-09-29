@@ -89,7 +89,7 @@ export default function CampaignDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [campaignId, token])
+  }, [campaignId, token, router])
 
   const fetchEmailLogs = useCallback(async () => {
     try {
